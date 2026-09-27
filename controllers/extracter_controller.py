@@ -67,14 +67,12 @@ async def downloadExcel(request: Request):
         ("TUESDAY", "O", "Q"),
         ("WEDNESDAY", "R", "T"),
         ("THURSDAY", "U", "W"),
+        ("TOTAL", "X", "Z"),
     ]
 
     for title, start, end in header_groups:
         ws.merge_cells(f"{start}1:{end}1")
         ws[f"{start}1"] = title
-
-    ws.merge_cells("X1:X2")
-    ws["X1"] = "GRAND TOTAL NET"
 
     headers = [
         "SHOW","ADMITS","NET",
@@ -84,6 +82,7 @@ async def downloadExcel(request: Request):
         "SHOW","ADMITS","NET",
         "SHOW","ADMITS","NET",
         "SHOW","ADMITS","NET",
+        "NET SHOW","NET ADM","GRAND TOTAL NET"
     ]
 
     col = 3
@@ -131,7 +130,9 @@ async def downloadExcel(request: Request):
             row.get("thu_admits",0),
             row.get("thu_net",0),
 
-            row.get("grand_total",0)
+            row.get("net_show", 0),
+            row.get("net_adm", 0),
+            row.get("grand_total", 0)
 
         ])
 

@@ -344,6 +344,8 @@
                                     <option value="default">Sort by: Default (Date)</option>
                                     <option value="net-desc">Net Collection: High to Low</option>
                                     <option value="net-asc">Net Collection: Low to High</option>
+                                    <option value="shows-desc">Net Shows: High to Low</option>
+                                    <option value="admits-desc">Net Admits: High to Low</option>
                                     <option value="cinema-asc">Cinema Name: A to Z</option>
                                     <option value="file-asc">File Name: A to Z</option>
                                 </select>
@@ -374,7 +376,7 @@
                                         {% for code, name, color in day_configs %}
                                             <th colspan="3" class="day-group-{{ code }}">{{ name|upper }}</th>
                                         {% endfor %}
-                                        <th rowspan="2" class="day-group-total">GRAND TOTAL NET</th>
+                                        <th colspan="3" class="day-group-total">TOTAL</th>
                                         <th rowspan="2" style="min-width: 75px;">ACTIONS</th>
                                     </tr>
 
@@ -385,12 +387,15 @@
                                             <th style="min-width: 62px;">ADM.</th>
                                             <th style="min-width: 95px;">NET (₹)</th>
                                         {% endfor %}
+                                        <th style="min-width: 65px;" class="day-group-total">NET SHOW</th>
+                                        <th style="min-width: 75px;" class="day-group-total">NET ADM</th>
+                                        <th style="min-width: 110px;" class="day-group-total">GRAND TOTAL NET</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dcr-records-tbody">
                                     {% if reports and reports|length > 0 %}
                                         {% for row in reports %}
-                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-cinema="{{ row['cinema_name'] }}" data-file="{{ row['file_name'] }}">
+                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-cinema="{{ row['cinema_name'] }}" data-file="{{ row['file_name'] }}">
                                             <!-- File Name (Sticky Col 1) -->
                                             <td class="sticky-col-file text-start fw-medium text-truncate" title="{{ row['file_name'] }}">
                                                 <div class="d-flex align-items-center gap-1">
@@ -445,8 +450,20 @@
                                                 </td>
                                             {% endfor %}
 
+                                            <!-- NET SHOW -->
+                                            <td class="cell-grand-total text-center">
+                                                <span class="badge-shows" style="background: rgba(37, 99, 235, 0.15); color: #1d4ed8; font-size: 0.8rem; font-weight: 700;">
+                                                    {{ row["net_show"]|default(0) }}
+                                                </span>
+                                            </td>
+
+                                            <!-- NET ADM -->
+                                            <td class="cell-grand-total text-end fw-bold" style="color: #4338ca;">
+                                                {{ "{:,}".format(row["net_adm"]|default(0)|int) }}
+                                            </td>
+
                                             <!-- Grand Total Net -->
-                                            <td class="cell-grand-total">
+                                            <td class="cell-grand-total text-end">
                                                 ₹ {{ "{:,.2f}".format(row["grand_total"]|float) }}
                                             </td>
 
@@ -465,7 +482,7 @@
                                         {% endfor %}
                                     {% else %}
                                         <tr id="dcr-empty-row">
-                                            <td colspan="26" class="text-center py-5">
+                                            <td colspan="28" class="text-center py-5">
                                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                                     <div class="mb-3 p-3 rounded-circle" style="background-color: var(--primary-light);">
                                                         <i data-lucide="file-spreadsheet" style="width: 40px; height: 40px; color: var(--primary-color);"></i>
@@ -576,6 +593,10 @@
                 filteredRows.sort((a, b) => {
                     const netA = parseFloat(a.getAttribute('data-net') || 0);
                     const netB = parseFloat(b.getAttribute('data-net') || 0);
+                    const showsA = parseInt(a.getAttribute('data-shows') || 0, 10);
+                    const showsB = parseInt(b.getAttribute('data-shows') || 0, 10);
+                    const admitsA = parseInt(a.getAttribute('data-admits') || 0, 10);
+                    const admitsB = parseInt(b.getAttribute('data-admits') || 0, 10);
                     const cinA = (a.getAttribute('data-cinema') || '').toLowerCase();
                     const cinB = (b.getAttribute('data-cinema') || '').toLowerCase();
                     const fileA = (a.getAttribute('data-file') || '').toLowerCase();
@@ -583,6 +604,8 @@
 
                     if (sortType === 'net-desc') return netB - netA;
                     if (sortType === 'net-asc') return netA - netB;
+                    if (sortType === 'shows-desc') return showsB - showsA;
+                    if (sortType === 'admits-desc') return admitsB - admitsA;
                     if (sortType === 'cinema-asc') return cinA.localeCompare(cinB);
                     if (sortType === 'file-asc') return fileA.localeCompare(fileB);
                     return 0;
@@ -691,7 +714,15 @@
                             <label class="text-muted small text-uppercase fw-semibold">Grand Total Collection</label>
                             <div class="fw-bold fs-5 text-primary">₹ ${Number(report.grand_total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                         </div>
-                        <div class="col-12">
+                        <div class="col-6 col-md-3">
+                            <label class="text-muted small text-uppercase fw-semibold">Net Shows</label>
+                            <div><span class="badge bg-primary-subtle text-primary px-2 py-1 fs-6">${report.net_show || 0}</span></div>
+                        </div>
+                        <div class="col-6 col-md-3">
+                            <label class="text-muted small text-uppercase fw-semibold">Net Admits</label>
+                            <div class="fw-bold fs-6" style="color: #4338ca;">${Number(report.net_adm || 0).toLocaleString()}</div>
+                        </div>
+                        <div class="col-12 col-md-6">
                             <label class="text-muted small text-uppercase fw-semibold">Distributor / Theatre Address</label>
                             <div class="p-2 rounded bg-light border text-secondary small" style="white-space: pre-line;">${report.distributor_address || 'No address text extracted'}</div>
                         </div>

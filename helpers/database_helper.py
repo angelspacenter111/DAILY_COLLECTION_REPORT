@@ -38,6 +38,13 @@ def compute_report_aggregates(details: List[Dict[str, Any]]) -> Dict[str, Any]:
                 aggregates[f"{prefix}_net"] = round(max(aggregates[f"{prefix}_net"], net_val), 2)
                 break
 
+    net_show = sum(aggregates[f"{prefix}_show"] for prefix in day_prefixes)
+    net_adm = sum(aggregates[f"{prefix}_admits"] for prefix in day_prefixes)
+
+    aggregates["net_show"] = net_show
+    aggregates["net_adm"] = net_adm
+    aggregates["total_shows"] = net_show
+    aggregates["total_admits"] = net_adm
     aggregates["grand_total"] = round(grand_total, 2)
     return aggregates
 
@@ -83,6 +90,13 @@ async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[s
                 doc["_id"] = str(doc.get("_id", ""))
                 if isinstance(doc.get("created_at"), datetime):
                     doc["created_at"] = doc["created_at"].isoformat()
+
+                day_prefixes = ["fri", "sat", "sun", "mon", "tue", "wed", "thu"]
+                if "net_show" not in doc:
+                    doc["net_show"] = sum(int(doc.get(f"{p}_show", 0) or 0) for p in day_prefixes)
+                if "net_adm" not in doc:
+                    doc["net_adm"] = sum(int(doc.get(f"{p}_admits", 0) or 0) for p in day_prefixes)
+
                 reports.append(doc)
             return reports
         except AutoReconnect as e:
