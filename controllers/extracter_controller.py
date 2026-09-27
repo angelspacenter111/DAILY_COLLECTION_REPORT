@@ -82,7 +82,7 @@ async def downloadExcel(request: Request):
         "SHOW","ADMITS","NET",
         "SHOW","ADMITS","NET",
         "SHOW","ADMITS","NET",
-        "NET SHOW","NET ADM","GRAND TOTAL NET"
+        "SHOW","ADMITS","NET"
     ]
 
     col = 3

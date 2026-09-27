@@ -116,7 +116,7 @@
             .day-group-tue { background-color: rgba(217, 119, 6, 0.08) !important; color: #b45309 !important; }
             .day-group-wed { background-color: rgba(8, 145, 178, 0.08) !important; color: #0e7490 !important; }
             .day-group-thu { background-color: rgba(225, 29, 72, 0.08) !important; color: #be123c !important; }
-            .day-group-total { background-color: rgba(37, 99, 235, 0.14) !important; color: #1e40af !important; font-weight: 800; }
+            .day-group-total { background-color: rgba(37, 99, 235, 0.08) !important; color: #1d4ed8 !important; }
 
             /* Sticky Columns on Horizontal Scroll */
             .sticky-col-file {
@@ -387,9 +387,9 @@
                                             <th style="min-width: 62px;">ADM.</th>
                                             <th style="min-width: 95px;">NET (₹)</th>
                                         {% endfor %}
-                                        <th style="min-width: 65px;" class="day-group-total">NET SHOW</th>
-                                        <th style="min-width: 75px;" class="day-group-total">NET ADM</th>
-                                        <th style="min-width: 110px;" class="day-group-total">GRAND TOTAL NET</th>
+                                        <th style="min-width: 48px;" title="Total Shows (Net Shows)">SH.</th>
+                                        <th style="min-width: 62px;" title="Total Admits (Net Admits)">ADM.</th>
+                                        <th style="min-width: 95px;" title="Grand Total Net">NET (₹)</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dcr-records-tbody">
@@ -450,21 +450,34 @@
                                                 </td>
                                             {% endfor %}
 
-                                            <!-- NET SHOW -->
-                                            <td class="cell-grand-total text-center">
-                                                <span class="badge-shows" style="background: rgba(37, 99, 235, 0.15); color: #1d4ed8; font-size: 0.8rem; font-weight: 700;">
-                                                    {{ row["net_show"]|default(0) }}
-                                                </span>
+                                            <!-- TOTAL: Shows -->
+                                            {% set tot_shows = row["net_show"]|default(0)|int %}
+                                            <td>
+                                                {% if tot_shows > 0 %}
+                                                    <span class="badge-shows">{{ tot_shows }}</span>
+                                                {% else %}
+                                                    <span class="cell-zero">-</span>
+                                                {% endif %}
                                             </td>
 
-                                            <!-- NET ADM -->
-                                            <td class="cell-grand-total text-end fw-bold" style="color: #4338ca;">
-                                                {{ "{:,}".format(row["net_adm"]|default(0)|int) }}
+                                            <!-- TOTAL: Admits -->
+                                            {% set tot_adm = row["net_adm"]|default(0)|int %}
+                                            <td>
+                                                {% if tot_adm > 0 %}
+                                                    <span class="fw-medium">{{ "{:,}".format(tot_adm) }}</span>
+                                                {% else %}
+                                                    <span class="cell-zero">-</span>
+                                                {% endif %}
                                             </td>
 
-                                            <!-- Grand Total Net -->
-                                            <td class="cell-grand-total text-end">
-                                                ₹ {{ "{:,.2f}".format(row["grand_total"]|float) }}
+                                            <!-- TOTAL: Grand Total Net -->
+                                            {% set tot_net = row["grand_total"]|default(0.0)|float %}
+                                            <td>
+                                                {% if tot_net > 0 %}
+                                                    <span class="cell-net cell-net-positive">₹ {{ "{:,.2f}".format(tot_net) }}</span>
+                                                {% else %}
+                                                    <span class="cell-zero">₹ 0.00</span>
+                                                {% endif %}
                                             </td>
 
                                             <!-- Row Actions -->
