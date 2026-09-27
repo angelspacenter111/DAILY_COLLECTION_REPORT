@@ -5,7 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple
 
 logger = logging.getLogger(__name__)
 
-# Canonical weekday mapping
+# Canonical weekday mapping with pre-compiled patterns
 WEEKDAY_PATTERNS = [
     (re.compile(r'\b(fri|friday)\b', re.IGNORECASE), "Friday"),
     (re.compile(r'\b(sat|saturday)\b', re.IGNORECASE), "Saturday"),
@@ -15,6 +15,28 @@ WEEKDAY_PATTERNS = [
     (re.compile(r'\b(wed|wednesday)\b', re.IGNORECASE), "Wednesday"),
     (re.compile(r'\b(thu|thur|thurs|thursday)\b', re.IGNORECASE), "Thursday"),
 ]
+
+# Pre-compiled regex patterns for maximum matching performance
+RE_NON_ALPHANUM = re.compile(r'[^a-zA-Z0-9\/\.\s]')
+RE_WHITESPACE = re.compile(r'\s+')
+RE_DAY_EXACT = re.compile(r'^(day|days)$')
+RE_SHOWS = re.compile(r'^(shows?|sh\.?|sh|no\.?\s*(of)?\s*shows?)$')
+RE_ATTENDANCE = re.compile(r'^(attendance|admits?|aud(\.|ience)?|pax|attnd|seats?\s*sold|total\s*sold)$')
+RE_NETT_EXACT = re.compile(r'^(final\s+)?nett?(\s+(amt|amount|collection|coll|total))?$')
+RE_NETT_WORD = re.compile(r'\b(final\s+)?nett?\b')
+RE_DIGITS = re.compile(r'[^\d]')
+RE_FLOAT_CLEAN = re.compile(r'[^0-9\.\-]')
+
+# Cinema keywords for intelligent identification
+CINEMA_PRIMARY_KW = ('cinema', 'cinemas', 'cinemaz', 'cineplex', 'miniplex', 'inox', 'pvr')
+CINEMA_SECONDARY_KW = ('miraj', 'citypride', 'pride', 'mall', 'heritage', 'eylex', 'station')
+CINEMA_EXCLUDE_TERMS = ('distributor', 'share report', 'gstin', 'gst no', 'pincode', 'dulhaniya', 'first film', 'total', 'phone', 'tel', 'contact')
+
+# Date regexes
+RE_DATE_1 = re.compile(r'(?:date|dated)\s*:?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})', re.IGNORECASE)
+RE_DATE_2 = re.compile(r'\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})\b')
+RE_DATE_3 = re.compile(r'\b(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+\d{4})\b', re.IGNORECASE)
+RE_DATE_4 = re.compile(r'\b(\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2,4})\b', re.IGNORECASE)
 
 def match_column_type(header_cell: Any) -> Optional[str]:
     """
@@ -31,22 +53,22 @@ def match_column_type(header_cell: Any) -> Optional[str]:
 
     # Check first line for multiline cells
     first_line = raw_str.split('\n')[0].strip().lower()
-    first_clean = re.sub(r'[^a-zA-Z0-9\/\.\s]', '', first_line).strip()
+    first_clean = RE_NON_ALPHANUM.sub('', first_line).strip()
 
     # 1. Day Check
-    if re.search(r'^(day|days)$', first_clean) or first_clean.startswith("day"):
+    if RE_DAY_EXACT.search(first_clean) or first_clean.startswith("day"):
         if "today" not in first_clean:
             return "day"
 
-    full_clean = re.sub(r'[\r\n]+', ' ', raw_str).strip().lower()
-    full_clean = re.sub(r'\s+', ' ', full_clean)
+    full_clean = raw_str.replace('\r', ' ').replace('\n', ' ').strip().lower()
+    full_clean = RE_WHITESPACE.sub(' ', full_clean)
 
     # 2. Shows Check
-    if re.search(r'^(shows?|sh\.?|sh|no\.?\s*(of)?\s*shows?)$', full_clean):
+    if RE_SHOWS.search(full_clean):
         return "shows"
 
     # 3. Attendance Check (including Seats Sold, Total Sold, Admits, Aud)
-    if re.search(r'^(attendance|admits?|aud(\.|ience)?|pax|attnd|seats?\s*sold|total\s*sold)$', full_clean):
+    if RE_ATTENDANCE.search(full_clean):
         return "attendance"
 
     # 4. Nett Check
@@ -55,11 +77,11 @@ def match_column_type(header_cell: Any) -> Optional[str]:
         return None
     if "gross" in full_clean and "net" not in full_clean:
         return None
-    if re.search(r'^(final\s+)?nett?(\s+(amt|amount|collection|coll|total))?$', full_clean):
+    if RE_NETT_EXACT.search(full_clean):
         return "nett"
     if full_clean in ("net", "nett", "final net", "final nett", "net coll", "nett coll"):
         return "nett"
-    if re.search(r'\b(final\s+)?nett?\b', full_clean) and "gross" not in full_clean and "house" not in full_clean:
+    if RE_NETT_WORD.search(full_clean) and "gross" not in full_clean and "house" not in full_clean:
         return "nett"
 
     return None
@@ -107,7 +129,7 @@ def clean_integer(raw_val: Any) -> int:
     if not raw_val:
         return 0
     text = str(raw_val).strip()
-    digits = re.sub(r'[^\d]', '', text)
+    digits = RE_DIGITS.sub('', text)
     return int(digits) if digits else 0
 
 def clean_net_amount(raw_val: Any) -> str:
@@ -115,7 +137,7 @@ def clean_net_amount(raw_val: Any) -> str:
     if not raw_val:
         return "0.00"
     text = str(raw_val).strip()
-    cleaned = re.sub(r'[^0-9\.\-]', '', text)
+    cleaned = RE_FLOAT_CLEAN.sub('', text)
     if not cleaned or cleaned in ("-", ".", "-."):
         return "0.00"
     try:
@@ -283,128 +305,155 @@ def extract_dcr_table_data(pdf) -> List[Dict[str, Any]]:
     rows, _ = extract_dcr_table_data_with_diagnostics(pdf)
     return rows
 
-def extract_date_safe(pdf) -> datetime:
-    """Extracts report date from PDF or defaults to current date."""
+def clean_duplicate_words(s: str) -> str:
+    """Removes repetitive adjacent words or phrases (e.g. 'MIRAJ CINEMAS MIRAJ CINEMAS' -> 'MIRAJ CINEMAS')."""
+    words = s.split()
+    cleaned = []
+    for w in words:
+        if not cleaned or w.lower() != cleaned[-1].lower():
+            cleaned.append(w)
+    half = len(cleaned) // 2
+    for l in range(1, half + 1):
+        if [w.lower() for w in cleaned[:l]] == [w.lower() for w in cleaned[l:2*l]]:
+            cleaned = cleaned[l:]
+            break
+    return ' '.join(cleaned)
+
+def extract_all_metadata_fast(pdf, fallback_name: str = "Unknown Cinema") -> Tuple[datetime, str, str]:
+    """
+    Extracts report date, distributor address, and cinema name in a single fast pass.
+    Reuses page text and word extractions to avoid redundant CPU-heavy pdfplumber calls.
+    Returns: (report_date, cinema_name, distributor_address)
+    """
+    extracted_date = None
+    extracted_cinema = None
+    extracted_address = ""
+
+    # Most DCR metadata is on Page 1
     for page in pdf.pages:
         text = page.extract_text() or ""
+        lines = [l.strip() for l in text.split('\n') if l.strip()]
 
-        match = re.search(r'(?:date|dated)\s*:?\s*(\d{1,2}[\/\-\.]\d{1,2}[\/\-\.]\d{2,4})', text, re.IGNORECASE)
-        if match:
-            date_str = match.group(1).replace(".", "/")
-            for fmt in ("%d/%m/%Y", "%d/%m/%y", "%d-%m-%Y", "%d-%m-%y"):
-                try:
-                    return datetime.strptime(date_str, fmt)
-                except ValueError:
-                    pass
+        # 1. Date Extraction
+        if not extracted_date:
+            m = RE_DATE_1.search(text)
+            if m:
+                d_str = m.group(1).replace(".", "/")
+                for fmt in ("%d/%m/%Y", "%d/%m/%y", "%d-%m-%Y", "%d-%m-%y"):
+                    try:
+                        extracted_date = datetime.strptime(d_str, fmt)
+                        break
+                    except ValueError:
+                        pass
+            if not extracted_date:
+                m = RE_DATE_2.search(text)
+                if m:
+                    try:
+                        extracted_date = datetime.strptime(m.group(1).replace("-", "/"), "%d/%m/%Y")
+                    except ValueError:
+                        pass
+            if not extracted_date:
+                m = RE_DATE_3.search(text)
+                if m:
+                    d_str = m.group(1).replace(",", "")
+                    for fmt in ("%d %b %Y", "%d %B %Y"):
+                        try:
+                            extracted_date = datetime.strptime(d_str, fmt)
+                            break
+                        except ValueError:
+                            pass
+            if not extracted_date:
+                m = RE_DATE_4.search(text)
+                if m:
+                    for fmt in ("%d-%b-%y", "%d-%b-%Y"):
+                        try:
+                            extracted_date = datetime.strptime(m.group(1), fmt)
+                            break
+                        except ValueError:
+                            pass
 
-        match = re.search(r'\b(\d{1,2}[\/\-]\d{1,2}[\/\-]\d{4})\b', text)
-        if match:
-            date_str = match.group(1).replace("-", "/")
+        # 2. Cinema Name Extraction (Scored segment heuristic)
+        if not extracted_cinema and lines:
+            candidates = []
+            for line in lines[:10]:
+                l_low = line.lower()
+                if any(term in l_low for term in ('share report', 'gstin', 'gst no', 'dulhaniya', 'first film')):
+                    continue
+
+                segments = [s.strip() for s in re.split(r'[,|]|\s{3,}', line) if s.strip()]
+                for seg in segments:
+                    seg_clean = re.sub(r'\s*(week|day|days|date)\s*:.*$', '', seg, flags=re.IGNORECASE).strip()
+                    s_low = seg_clean.lower()
+                    if any(term in s_low for term in CINEMA_EXCLUDE_TERMS):
+                        continue
+
+                    has_primary = any(kw in s_low for kw in CINEMA_PRIMARY_KW)
+                    has_secondary = any(kw in s_low for kw in CINEMA_SECONDARY_KW)
+
+                    if has_primary or has_secondary:
+                        seg_clean = re.split(r'\s+(s\.?r\.?no|near|opp|behind|road|survey|plot|floor|4th)\b', seg_clean, flags=re.IGNORECASE)[0].strip(' ,-')
+                        seg_clean = clean_duplicate_words(seg_clean)
+                        if len(seg_clean) > 3 and seg_clean.lower() not in ('cinema', 'cinemas', 'theatre', 'mall', 'miniplex'):
+                            is_corporate = any(co in s_low for co in ('ltd', 'limited', 'pvt', 'private', 'corporation'))
+                            score = 1 if is_corporate else (5 if has_primary else 3)
+                            candidates.append((score, seg_clean))
+
+            if candidates:
+                candidates.sort(key=lambda x: x[0], reverse=True)
+                extracted_cinema = candidates[0][1]
+
+        # 3. Address Extraction
+        if not extracted_address:
             try:
-                return datetime.strptime(date_str, "%d/%m/%Y")
-            except ValueError:
+                words = page.extract_words()
+                phone_y = None
+                for word in words:
+                    w_low = word["text"].lower()
+                    if w_low.startswith("phone") or w_low.startswith("tel"):
+                        phone_y = word["top"]
+                        break
+                if phone_y is not None:
+                    addr_words = [w for w in words if w["top"] < phone_y and w["x0"] < 250]
+                    lines_dict: Dict[int, List[Dict[str, Any]]] = {}
+                    for w in addr_words:
+                        y = round(w["top"] / 4) * 4
+                        lines_dict.setdefault(y, []).append(w)
+                    res = []
+                    for _, line_words in sorted(lines_dict.items()):
+                        line_str = " ".join(w["text"] for w in sorted(line_words, key=lambda x: x["x0"])).strip()
+                        if line_str:
+                            res.append(line_str)
+                    if res:
+                        extracted_address = "\n".join(res[:5])
+            except Exception:
                 pass
 
-        match = re.search(
-            r'\b(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*[\s,]+\d{4})\b',
-            text,
-            re.IGNORECASE
-        )
-        if match:
-            date_str = re.sub(r'[,]+', '', match.group(1))
-            for fmt in ("%d %b %Y", "%d %B %Y"):
-                try:
-                    return datetime.strptime(date_str, fmt)
-                except ValueError:
-                    pass
+            if not extracted_address:
+                for i, line in enumerate(lines):
+                    if "daily collection report" in line.lower() or "distributor report" in line.lower():
+                        start = max(0, i - 4)
+                        extracted_address = "\n".join(lines[start:i])
+                        break
 
-        match = re.search(
-            r'\b(\d{1,2}-(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)-\d{2,4})\b',
-            text,
-            re.IGNORECASE
-        )
-        if match:
-            for fmt in ("%d-%b-%y", "%d-%b-%Y"):
-                try:
-                    return datetime.strptime(match.group(1), fmt)
-                except ValueError:
-                    pass
+        # If all metadata extracted from page 1, early exit!
+        if extracted_date and extracted_cinema and extracted_address:
+            break
 
-    return datetime.now()
+    final_date = extracted_date or datetime.now()
+    final_cinema = extracted_cinema or fallback_name.replace('.pdf', '').replace('.PDF', '')
+    return final_date, final_cinema, extracted_address
+
+def extract_date_safe(pdf) -> datetime:
+    dt, _, _ = extract_all_metadata_fast(pdf)
+    return dt
 
 def extract_cinema_name_safe(pdf, fallback_name: str = "Unknown Cinema") -> str:
-    """Extracts cinema / theatre name with resilient fallback strategies."""
-    excluded_keywords = ("phone", "date", "address", "distributor", "email", "tel", "report", "gst", "collection", "day:")
-    for page in pdf.pages:
-        text = page.extract_text() or ""
-        lines = [line.strip() for line in text.split("\n") if line.strip()]
-
-        for i, line in enumerate(lines):
-            lower = line.lower()
-            if "daily collection report" in lower or "distributor report" in lower or "collection report" in lower:
-                for offset in range(1, min(i + 1, 6)):
-                    candidate = lines[i - offset].strip()
-                    cand_lower = candidate.lower()
-                    if len(candidate) > 2 and not any(kw in cand_lower for kw in excluded_keywords):
-                        return candidate
-
-        try:
-            words = page.extract_words()
-            if words:
-                page_width = page.width
-                center_words = [
-                    w for w in words
-                    if page_width * 0.15 < w["x0"] < page_width * 0.85 and w["top"] < 180
-                ]
-                if center_words:
-                    lines_dict: Dict[int, List[Dict[str, Any]]] = {}
-                    for w in center_words:
-                        key = round(w["top"] / 5) * 5
-                        lines_dict.setdefault(key, []).append(w)
-                    for _, line_words in sorted(lines_dict.items()):
-                        line_str = " ".join(w["text"] for w in sorted(line_words, key=lambda k: k["x0"])).strip()
-                        if line_str and not any(k in line_str.lower() for k in ("report", "distributor", "phone", "date", "collection")):
-                            if len(line_str) > 3:
-                                return line_str
-        except Exception:
-            pass
-
-    return fallback_name
+    _, cin, _ = extract_all_metadata_fast(pdf, fallback_name)
+    return cin
 
 def extract_address_safe(pdf) -> str:
-    """Safely extracts distributor/cinema address preceding telephone/report markers."""
-    for page in pdf.pages:
-        try:
-            words = page.extract_words()
-            phone_y = None
-            for word in words:
-                if word["text"].lower().startswith("phone") or word["text"].lower().startswith("tel"):
-                    phone_y = word["top"]
-                    break
-            if phone_y is not None:
-                addr_words = [w for w in words if w["top"] < phone_y and w["x0"] < 250]
-                lines_dict: Dict[int, List[Dict[str, Any]]] = {}
-                for w in addr_words:
-                    y = round(w["top"] / 4) * 4
-                    lines_dict.setdefault(y, []).append(w)
-                res = []
-                for _, line_words in sorted(lines_dict.items()):
-                    line = " ".join(w["text"] for w in sorted(line_words, key=lambda x: x["x0"])).strip()
-                    if line:
-                        res.append(line)
-                if res:
-                    return "\n".join(res[:5])
-        except Exception:
-            pass
-
-        text = page.extract_text() or ""
-        lines = [l.strip() for l in text.split("\n") if l.strip()]
-        for i, line in enumerate(lines):
-            if "daily collection report" in line.lower() or "distributor report" in line.lower():
-                start = max(0, i - 4)
-                return "\n".join(lines[start:i])
-
-    return ""
+    _, _, addr = extract_all_metadata_fast(pdf)
+    return addr
 
 # Backward compatibility wrappers:
 def extract_date(pdf):

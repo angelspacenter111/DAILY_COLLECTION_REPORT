@@ -1,8 +1,14 @@
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import StreamingResponse
+from fastapi.responses import StreamingResponse, JSONResponse
 from config import BASE_URL
-from helpers.database_helper import fetchrecords, main_query
+from helpers.database_helper import (
+    fetchrecords,
+    main_query,
+    get_dcr_summary,
+    delete_dcr_report,
+    clear_all_dcr_reports,
+)
 from openpyxl import Workbook
 from openpyxl.styles import Font, Alignment, Border, Side
 from openpyxl.utils import get_column_letter
@@ -12,8 +18,28 @@ templates = Jinja2Templates(directory="templates")
 
 async def extracterindex(request: Request):
     result = await fetchrecords(main_query())
-    context = { "BASE_URL": BASE_URL, "reports": result }
+    summary = get_dcr_summary(result)
+    context = {
+        "BASE_URL": BASE_URL,
+        "reports": result,
+        "summary": summary
+    }
     return templates.TemplateResponse(request=request, name="extracterindex.html", context=context)
+
+async def delete_record(request: Request, record_id: str):
+    success = await delete_dcr_report(record_id)
+    return JSONResponse({
+        "status": success,
+        "message": "Record deleted successfully." if success else "Failed to delete record."
+    })
+
+async def clear_all_records(request: Request):
+    count = await clear_all_dcr_reports()
+    return JSONResponse({
+        "status": True,
+        "deleted_count": count,
+        "message": f"{count} records cleared successfully."
+    })
 
 async def downloadExcel(request: Request):
 

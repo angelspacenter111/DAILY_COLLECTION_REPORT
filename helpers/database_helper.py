@@ -2,6 +2,7 @@ import logging
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
+from bson import ObjectId
 from database import db
 
 logger = logging.getLogger(__name__)
@@ -67,11 +68,70 @@ async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[s
         reports: List[Dict[str, Any]] = []
         async for doc in cursor:
             doc["id"] = str(doc.get("_id", ""))
+            doc["_id"] = str(doc.get("_id", ""))
+            if isinstance(doc.get("created_at"), datetime):
+                doc["created_at"] = doc["created_at"].isoformat()
             reports.append(doc)
         return reports
     except Exception as e:
         logger.error("Failed to fetch records from MongoDB: %s", str(e))
         return []
+
+async def init_db_indexes():
+    """Ensures performance indexes exist on dcr_reports collection."""
+    try:
+        await db.dcr_reports.create_index([("created_at", -1)])
+        await db.dcr_reports.create_index([("report_date", -1)])
+        await db.dcr_reports.create_index([("file_name", 1)])
+    except Exception as e:
+        logger.warning("Index creation notice: %s", str(e))
+
+async def delete_dcr_report(report_id: str) -> bool:
+    """Deletes a single DCR report document by ID."""
+    try:
+        res = await db.dcr_reports.delete_one({"_id": ObjectId(report_id)})
+        return res.deleted_count > 0
+    except Exception as e:
+        logger.error("Failed to delete report %s: %s", report_id, str(e))
+        return False
+
+async def clear_all_dcr_reports() -> int:
+    """Deletes all documents from dcr_reports collection."""
+    try:
+        res = await db.dcr_reports.delete_many({})
+        return res.deleted_count
+    except Exception as e:
+        logger.error("Failed to clear reports: %s", str(e))
+        return 0
+
+def get_dcr_summary(reports: List[Dict[str, Any]]) -> Dict[str, Any]:
+    """Calculates KPI summary totals across all fetched DCR reports."""
+    days = ['fri', 'sat', 'sun', 'mon', 'tue', 'wed', 'thu']
+    total_net = 0.0
+    total_admits = 0
+    total_shows = 0
+
+    for r in reports:
+        try:
+            total_net += float(r.get("grand_total", 0) or 0)
+        except (ValueError, TypeError):
+            pass
+        for day in days:
+            try:
+                total_shows += int(r.get(f"{day}_show", 0) or 0)
+            except (ValueError, TypeError):
+                pass
+            try:
+                total_admits += int(r.get(f"{day}_admits", 0) or 0)
+            except (ValueError, TypeError):
+                pass
+
+    return {
+        "total_reports": len(reports),
+        "total_net": round(total_net, 2),
+        "total_admits": total_admits,
+        "total_shows": total_shows,
+    }
 
 def main_query():
     """Placeholder kept for compatibility with existing route handlers."""

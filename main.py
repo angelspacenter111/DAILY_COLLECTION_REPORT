@@ -1,10 +1,17 @@
+from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from routes.approuter import router as applicationrouter
 from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
+from helpers.database_helper import init_db_indexes
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await init_db_indexes()
+    yield
+
+app = FastAPI(lifespan=lifespan)
 
 app.include_router(applicationrouter)
 app.mount("/static", StaticFiles(directory="static"), name="static")

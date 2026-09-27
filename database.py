@@ -7,7 +7,12 @@ from config import MONGODB_URI, DATABASE_NAME
 async_client = AsyncIOMotorClient(
     MONGODB_URI,
     tlsCAFile=certifi.where(),
-    serverSelectionTimeoutMS=5000
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
+    socketTimeoutMS=10000,
+    maxPoolSize=50,
+    minPoolSize=5,
+    maxIdleTimeMS=45000
 )
 db = async_client[DATABASE_NAME]
 
@@ -15,6 +20,10 @@ db = async_client[DATABASE_NAME]
 sync_client = MongoClient(
     MONGODB_URI,
     tlsCAFile=certifi.where(),
-    serverSelectionTimeoutMS=5000
+    serverSelectionTimeoutMS=5000,
+    connectTimeoutMS=5000,
+    socketTimeoutMS=10000,
+    maxPoolSize=20,
+    maxIdleTimeMS=45000
 )
 sync_db = sync_client[DATABASE_NAME]

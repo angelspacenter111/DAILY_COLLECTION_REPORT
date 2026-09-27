@@ -1,11 +1,241 @@
-{% set days = ['fri','sat','sun','mon','tue','wed','thu'] %}
+{% set day_configs = [
+    ('fri', 'Friday', '#2563eb'),
+    ('sat', 'Saturday', '#4f46e5'),
+    ('sun', 'Sunday', '#7c3aed'),
+    ('mon', 'Monday', '#059669'),
+    ('tue', 'Tuesday', '#d97706'),
+    ('wed', 'Wednesday', '#0891b2'),
+    ('thu', 'Thursday', '#e11d48')
+] %}
 <!doctype html>
 <html lang="en" data-theme="light">
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>Extracted Records | AeroData XLS</title>
+        <title>Extracted Records | Cinema DCR Suite</title>
         {% include "includes/css.html" %}
+        <style>
+            /* DCR Table Custom Styling */
+            .dcr-card-metric {
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                padding: 1.15rem 1.25rem;
+                display: flex;
+                align-items: center;
+                gap: 1rem;
+                box-shadow: var(--shadow-sm);
+                transition: transform 0.18s ease, box-shadow 0.18s ease;
+            }
+            .dcr-card-metric:hover {
+                transform: translateY(-2px);
+                box-shadow: var(--shadow-md);
+            }
+            .dcr-metric-icon {
+                width: 48px;
+                height: 48px;
+                border-radius: 10px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            .dcr-metric-val {
+                font-size: 1.45rem;
+                font-weight: 700;
+                line-height: 1.2;
+                color: var(--text-main);
+            }
+            .dcr-metric-label {
+                font-size: 0.8rem;
+                font-weight: 500;
+                color: var(--text-muted);
+                text-transform: uppercase;
+                letter-spacing: 0.5px;
+            }
+
+            /* Main Table Container */
+            .dcr-table-card {
+                background: var(--bg-card);
+                border: 1px solid var(--border-color);
+                border-radius: 12px;
+                overflow: hidden;
+                box-shadow: var(--shadow-sm);
+            }
+            .dcr-table-responsive {
+                overflow-x: auto;
+                max-height: 68vh;
+                position: relative;
+            }
+            .dcr-table {
+                width: 100%;
+                border-collapse: separate;
+                border-spacing: 0;
+                font-size: 0.825rem;
+            }
+
+            /* Table Header Hierarchy */
+            .dcr-table thead {
+                position: sticky;
+                top: 0;
+                z-index: 20;
+            }
+            .dcr-table thead tr:first-child th {
+                background: #f1f5f9;
+                color: #1e293b;
+                font-size: 0.76rem;
+                font-weight: 700;
+                letter-spacing: 0.6px;
+                padding: 0.55rem 0.65rem;
+                border-bottom: 1px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+            .dcr-table thead tr:nth-child(2) th {
+                background: #f8fafc;
+                color: var(--text-muted);
+                font-size: 0.7rem;
+                font-weight: 600;
+                padding: 0.4rem 0.5rem;
+                border-bottom: 2px solid var(--border-color);
+                border-right: 1px solid var(--border-color);
+            }
+            [data-theme="dark"] .dcr-table thead tr:first-child th {
+                background: #1e293b;
+                color: #f8fafc;
+            }
+            [data-theme="dark"] .dcr-table thead tr:nth-child(2) th {
+                background: #0f172a;
+                color: #94a3b8;
+            }
+
+            /* Day Groups Coloring */
+            .day-group-fri { background-color: rgba(37, 99, 235, 0.08) !important; color: #1d4ed8 !important; }
+            .day-group-sat { background-color: rgba(79, 70, 229, 0.08) !important; color: #4338ca !important; }
+            .day-group-sun { background-color: rgba(124, 58, 237, 0.08) !important; color: #6d28d9 !important; }
+            .day-group-mon { background-color: rgba(5, 150, 105, 0.08) !important; color: #047857 !important; }
+            .day-group-tue { background-color: rgba(217, 119, 6, 0.08) !important; color: #b45309 !important; }
+            .day-group-wed { background-color: rgba(8, 145, 178, 0.08) !important; color: #0e7490 !important; }
+            .day-group-thu { background-color: rgba(225, 29, 72, 0.08) !important; color: #be123c !important; }
+            .day-group-total { background-color: rgba(37, 99, 235, 0.14) !important; color: #1e40af !important; font-weight: 800; }
+
+            /* Sticky Columns on Horizontal Scroll */
+            .sticky-col-file {
+                position: sticky;
+                left: 0;
+                z-index: 10;
+                background: var(--bg-card);
+                min-width: 175px;
+                max-width: 220px;
+                border-right: 1px solid var(--border-color);
+            }
+            .sticky-col-cinema {
+                position: sticky;
+                left: 175px;
+                z-index: 10;
+                background: var(--bg-card);
+                min-width: 200px;
+                max-width: 240px;
+                border-right: 2px solid var(--border-color);
+                box-shadow: 2px 0 5px rgba(0, 0, 0, 0.04);
+            }
+            thead th.sticky-col-file, thead th.sticky-col-cinema {
+                z-index: 25;
+            }
+
+            /* Cells */
+            .dcr-table tbody tr {
+                transition: background-color 0.12s ease;
+            }
+            .dcr-table tbody tr:hover {
+                background-color: rgba(37, 99, 235, 0.035);
+            }
+            .dcr-table tbody tr:hover .sticky-col-file,
+            .dcr-table tbody tr:hover .sticky-col-cinema {
+                background-color: #f1f5f9;
+            }
+            [data-theme="dark"] .dcr-table tbody tr:hover .sticky-col-file,
+            [data-theme="dark"] .dcr-table tbody tr:hover .sticky-col-cinema {
+                background-color: #1e293b;
+            }
+            .dcr-table td {
+                padding: 0.55rem 0.5rem;
+                vertical-align: middle;
+                border-bottom: 1px solid var(--border-color);
+                border-right: 1px solid rgba(226, 232, 240, 0.6);
+            }
+            [data-theme="dark"] .dcr-table td {
+                border-right-color: rgba(51, 65, 85, 0.6);
+            }
+
+            /* Badges & Values */
+            .cell-zero {
+                color: #cbd5e1;
+                font-weight: 400;
+            }
+            [data-theme="dark"] .cell-zero {
+                color: #475569;
+            }
+            .cell-net {
+                font-weight: 600;
+                color: var(--text-main);
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+            }
+            .cell-net-positive {
+                color: #047857;
+                font-weight: 700;
+            }
+            [data-theme="dark"] .cell-net-positive {
+                color: #34d399;
+            }
+            .cell-grand-total {
+                background-color: rgba(37, 99, 235, 0.06);
+                font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+                font-weight: 800;
+                font-size: 0.9rem;
+                color: #1d4ed8;
+            }
+            [data-theme="dark"] .cell-grand-total {
+                background-color: rgba(59, 130, 246, 0.12);
+                color: #60a5fa;
+            }
+            .badge-shows {
+                display: inline-block;
+                padding: 0.15rem 0.4rem;
+                border-radius: 4px;
+                font-size: 0.72rem;
+                font-weight: 600;
+                background: #f1f5f9;
+                color: #475569;
+            }
+            [data-theme="dark"] .badge-shows {
+                background: #334155;
+                color: #cbd5e1;
+            }
+
+            /* Action Buttons */
+            .btn-action-icon {
+                width: 28px;
+                height: 28px;
+                border-radius: 6px;
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                border: 1px solid var(--border-color);
+                background: transparent;
+                color: var(--text-muted);
+                transition: all 0.15s ease;
+            }
+            .btn-action-icon:hover {
+                background: var(--primary-light);
+                color: var(--primary-color);
+                border-color: var(--primary-color);
+            }
+            .btn-action-delete:hover {
+                background: #fee2e2;
+                color: #ef4444;
+                border-color: #ef4444;
+            }
+        </style>
     </head>
     <body>
         <div class="app-container">
@@ -14,105 +244,521 @@
             <main class="app-content">
                 {% include "includes/header.html" %}
 
-                <section class="page-container" id="records-view-wrapper">
-                    <div class="d-flex justify-content-between align-items-center mb-4">
+                <section class="page-container" id="dcr-view-wrapper">
+                    <!-- Page Title & Header Actions -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-4">
                         <div>
-                            <h1 class="h3 fw-bold mb-1">Extracted Records</h1>
-                            <p class="text-muted mb-0">
-                                Review, query, filter, and edit data fields extracted from files.
+                            <div class="d-flex align-items-center gap-2 mb-1">
+                                <h1 class="h3 fw-bold mb-0">Extracted DCR Records</h1>
+                                <span class="badge bg-primary-subtle text-primary border border-primary-subtle px-2 py-1" style="font-size: 0.75rem;">
+                                    MongoDB: DAILY_COLLECTION_REPORT
+                                </span>
+                            </div>
+                            <p class="text-muted mb-0" style="font-size: 0.875rem;">
+                                Aggregated Daily Collection Reports with verified calculations and housefull filtering.
                             </p>
                         </div>
                         <div class="d-flex gap-2">
-                            <button class="btn btn-outline-secondary" id="bulk-delete-records-btn">Bulk Delete</button>
-                            <a href="/downloadcdrexcel" class="btn btn-success"><i data-lucide="download" class="me-1"></i> Export Data</a>
+                            <a href="/create" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
+                                <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Upload PDFs
+                            </a>
+                            <a href="/downloadcdrexcel" class="btn btn-success btn-sm d-inline-flex align-items-center gap-1">
+                                <i data-lucide="download" style="width: 15px; height: 15px;"></i> Export Excel
+                            </a>
+                            <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" id="btn-clear-all" onclick="confirmClearAll()">
+                                <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i> Clear All
+                            </button>
                         </div>
                     </div>
 
+                    <!-- KPI Summary Metric Cards -->
+                    <div class="row g-3 mb-4">
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dcr-card-metric">
+                                <div class="dcr-metric-icon" style="background-color: rgba(37, 99, 235, 0.12); color: #2563eb;">
+                                    <i data-lucide="file-text" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <div class="dcr-metric-val" id="metric-total-files">{{ summary.total_reports if summary else reports|length }}</div>
+                                    <div class="dcr-metric-label">DCR Files Processed</div>
+                                </div>
+                            </div>
+                        </div>
 
-                    <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px;">
-                        <table class="table table-bordered table-sm mb-0 font-monospace text-center" style="font-size: 0.8rem; background-color: var(--bg-card); color: var(--text-main);">
-                            <thead>
-                                <tr>
-                                    <th></th>
-                                    <th></th>
-                                    <th colspan="3">FRIDAY</th>
-                                    <th colspan="3">SATURDAY</th>
-                                    <th colspan="3">SUNDAY</th>
-                                    <th colspan="3">MONDAY</th>
-                                    <th colspan="3">TUESDAY</th>
-                                    <th colspan="3">WEDNESDAY</th>
-                                    <th colspan="3">THURSDAY</th>
-                                    <th colspan="3">GRAND TOTAL NET</th>
-                                </tr>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dcr-card-metric">
+                                <div class="dcr-metric-icon" style="background-color: rgba(5, 150, 105, 0.12); color: #059669;">
+                                    <i data-lucide="indian-rupee" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <div class="dcr-metric-val text-success" id="metric-total-net">
+                                        ₹ {{ "{:,.2f}".format(summary.total_net) if summary else "0.00" }}
+                                    </div>
+                                    <div class="dcr-metric-label">Grand Total Net (INR)</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                <tr>
-                                    <th>FILE NAME</th>
-                                    <th>CINEMA NAME</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                    <th>SHOW</th>
-                                    <th>ADMITS</th>
-                                    <th>NET</th>
-                                </tr>
-                            </thead>
-                            <tbody id="records-tbody">
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dcr-card-metric">
+                                <div class="dcr-metric-icon" style="background-color: rgba(124, 58, 237, 0.12); color: #7c3aed;">
+                                    <i data-lucide="users" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <div class="dcr-metric-val" id="metric-total-admits">
+                                        {{ "{:,}".format(summary.total_admits) if summary else "0" }}
+                                    </div>
+                                    <div class="dcr-metric-label">Total Audience / Admits</div>
+                                </div>
+                            </div>
+                        </div>
 
-                                {% for row in reports %}
-                                <tr>
-
-                                    <td>{{ row["file_name"] }}</td>
-                                    <td>{{ row["cinema_name"] }}</td>
-
-                                    {% for day in days %}
-                                        <td>{{ row[day ~ "_show"] }}</td>
-                                        <td>{{ row[day ~ "_admits"] }}</td>
-                                        <td>{{ row[day ~ "_net"] }}</td>
-                                    {% endfor %}
-
-                                    <td></td>
-                                    <td></td>
-                                    <td><b>{{ row["grand_total"] }}</b></td>
-
-                                </tr>
-                                {% endfor %}
-
-                            </tbody>
-                        </table>
+                        <div class="col-12 col-sm-6 col-xl-3">
+                            <div class="dcr-card-metric">
+                                <div class="dcr-metric-icon" style="background-color: rgba(217, 119, 6, 0.12); color: #d97706;">
+                                    <i data-lucide="clapperboard" style="width: 24px; height: 24px;"></i>
+                                </div>
+                                <div>
+                                    <div class="dcr-metric-val" id="metric-total-shows">
+                                        {{ "{:,}".format(summary.total_shows) if summary else "0" }}
+                                    </div>
+                                    <div class="dcr-metric-label">Total Shows Screened</div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="d-flex justify-content-between align-items-center">
-                        <div class="text-muted" style="font-size: 0.85rem" id="records-pagination-info">
-                            Showing 0 to 0 of 0 records
+                    <!-- Search & Filter Controls Toolbar -->
+                    <div class="card-custom mb-3 p-3">
+                        <div class="row g-2 align-items-center">
+                            <div class="col-12 col-md-5">
+                                <div class="input-group input-group-sm">
+                                    <span class="input-group-text bg-transparent border-end-0 text-muted">
+                                        <i data-lucide="search" style="width: 15px; height: 15px;"></i>
+                                    </span>
+                                    <input type="text" class="form-control border-start-0" id="dcr-search-input" placeholder="Search by Cinema Name, PDF File Name, or Address..." onkeyup="filterDcrTable()">
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-3">
+                                <select class="form-select form-select-sm" id="dcr-sort-select" onchange="sortDcrTable()">
+                                    <option value="default">Sort by: Default (Date)</option>
+                                    <option value="net-desc">Net Collection: High to Low</option>
+                                    <option value="net-asc">Net Collection: Low to High</option>
+                                    <option value="cinema-asc">Cinema Name: A to Z</option>
+                                    <option value="file-asc">File Name: A to Z</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <select class="form-select form-select-sm" id="dcr-pagesize-select" onchange="changePageSize()">
+                                    <option value="10">10 per page</option>
+                                    <option value="25" selected>25 per page</option>
+                                    <option value="50">50 per page</option>
+                                    <option value="all">Show All</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-2 text-md-end text-muted" style="font-size: 0.8rem;" id="dcr-showing-counter">
+                                Showing {{ reports|length }} record(s)
+                            </div>
                         </div>
-                        <nav aria-label="Records pagination">
-                            <ul class="pagination pagination-sm mb-0" id="records-pagination-list"></ul>
+                    </div>
+
+                    <!-- Main Data Table -->
+                    <div class="dcr-table-card mb-3">
+                        <div class="dcr-table-responsive">
+                            <table class="dcr-table text-center" id="dcr-main-table">
+                                <thead>
+                                    <!-- Header Row 1: Group Names -->
+                                    <tr>
+                                        <th class="sticky-col-file text-start" rowspan="2">FILE NAME</th>
+                                        <th class="sticky-col-cinema text-start" rowspan="2">CINEMA NAME</th>
+                                        {% for code, name, color in day_configs %}
+                                            <th colspan="3" class="day-group-{{ code }}">{{ name|upper }}</th>
+                                        {% endfor %}
+                                        <th rowspan="2" class="day-group-total">GRAND TOTAL NET</th>
+                                        <th rowspan="2" style="min-width: 75px;">ACTIONS</th>
+                                    </tr>
+
+                                    <!-- Header Row 2: Sub-headers -->
+                                    <tr>
+                                        {% for code, name, color in day_configs %}
+                                            <th style="min-width: 48px;">SH.</th>
+                                            <th style="min-width: 62px;">ADM.</th>
+                                            <th style="min-width: 95px;">NET (₹)</th>
+                                        {% endfor %}
+                                    </tr>
+                                </thead>
+                                <tbody id="dcr-records-tbody">
+                                    {% if reports and reports|length > 0 %}
+                                        {% for row in reports %}
+                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-cinema="{{ row['cinema_name'] }}" data-file="{{ row['file_name'] }}">
+                                            <!-- File Name (Sticky Col 1) -->
+                                            <td class="sticky-col-file text-start fw-medium text-truncate" title="{{ row['file_name'] }}">
+                                                <div class="d-flex align-items-center gap-1">
+                                                    <i data-lucide="file" style="width: 14px; height: 14px; color: #ef4444; flex-shrink: 0;"></i>
+                                                    <span class="text-truncate" style="max-width: 160px;">{{ row["file_name"] }}</span>
+                                                </div>
+                                            </td>
+
+                                            <!-- Cinema Name (Sticky Col 2) -->
+                                            <td class="sticky-col-cinema text-start fw-semibold" title="{{ row['cinema_name'] }}">
+                                                <div class="text-truncate" style="max-width: 195px;">
+                                                    {{ row["cinema_name"] or 'Unknown Cinema' }}
+                                                </div>
+                                                {% if row.get('distributor_address') %}
+                                                    <small class="text-muted text-truncate d-block" style="font-size: 0.7rem; max-width: 195px;">
+                                                        {{ row['distributor_address'].split('\n')[0] }}
+                                                    </small>
+                                                {% endif %}
+                                            </td>
+
+                                            <!-- 7 Days Iteration (3 columns each) -->
+                                            {% for code, name, color in day_configs %}
+                                                {% set shows = row[code ~ "_show"]|default(0)|int %}
+                                                {% set admits = row[code ~ "_admits"]|default(0)|int %}
+                                                {% set net = row[code ~ "_net"]|default(0.0)|float %}
+
+                                                <!-- Shows -->
+                                                <td>
+                                                    {% if shows > 0 %}
+                                                        <span class="badge-shows">{{ shows }}</span>
+                                                    {% else %}
+                                                        <span class="cell-zero">-</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <!-- Admits -->
+                                                <td>
+                                                    {% if admits > 0 %}
+                                                        <span class="fw-medium">{{ "{:,}".format(admits) }}</span>
+                                                    {% else %}
+                                                        <span class="cell-zero">-</span>
+                                                    {% endif %}
+                                                </td>
+
+                                                <!-- Net Collection -->
+                                                <td>
+                                                    {% if net > 0 %}
+                                                        <span class="cell-net cell-net-positive">₹ {{ "{:,.2f}".format(net) }}</span>
+                                                    {% else %}
+                                                        <span class="cell-zero">₹ 0.00</span>
+                                                    {% endif %}
+                                                </td>
+                                            {% endfor %}
+
+                                            <!-- Grand Total Net -->
+                                            <td class="cell-grand-total">
+                                                ₹ {{ "{:,.2f}".format(row["grand_total"]|float) }}
+                                            </td>
+
+                                            <!-- Row Actions -->
+                                            <td>
+                                                <div class="d-flex align-items-center justify-content-center gap-1">
+                                                    <button type="button" class="btn-action-icon" title="View Full Report Details" onclick="viewReportModal('{{ row['id'] }}')">
+                                                        <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                                    </button>
+                                                    <button type="button" class="btn-action-icon btn-action-delete" title="Delete Record" onclick="deleteReportRecord('{{ row['id'] }}', '{{ row['file_name'] }}')">
+                                                        <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                                    </button>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    {% else %}
+                                        <tr id="dcr-empty-row">
+                                            <td colspan="26" class="text-center py-5">
+                                                <div class="d-flex flex-column align-items-center justify-content-center">
+                                                    <div class="mb-3 p-3 rounded-circle" style="background-color: var(--primary-light);">
+                                                        <i data-lucide="file-spreadsheet" style="width: 40px; height: 40px; color: var(--primary-color);"></i>
+                                                    </div>
+                                                    <h5 class="fw-bold mb-1">No Extracted DCR Records Found</h5>
+                                                    <p class="text-muted mb-3" style="max-width: 360px;">
+                                                        Upload cinema Daily Collection Report PDFs to start extracting data into MongoDB.
+                                                    </p>
+                                                    <a href="/create" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1">
+                                                        <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Upload DCR PDFs
+                                                    </a>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    {% endif %}
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+                    <!-- Pagination Navigation Bar -->
+                    <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 pt-2">
+                        <div class="text-muted" style="font-size: 0.85rem;" id="dcr-pagination-summary">
+                            Showing {{ reports|length }} of {{ reports|length }} records
+                        </div>
+                        <nav aria-label="Table pagination">
+                            <ul class="pagination pagination-sm mb-0 gap-1" id="dcr-pagination-nav"></ul>
                         </nav>
                     </div>
                 </section>
             </main>
         </div>
 
+        <!-- Report Details Modal -->
+        <div class="modal fade" id="reportDetailsModal" tabindex="-1" aria-labelledby="reportDetailsModalLabel" aria-hidden="true">
+            <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+                <div class="modal-content border-0 shadow">
+                    <div class="modal-header border-bottom">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="p-2 rounded" style="background: rgba(37,99,235,0.1); color: #2563eb;">
+                                <i data-lucide="film" style="width: 20px; height: 20px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold mb-0" id="reportDetailsModalLabel">Cinema Report Breakdown</h5>
+                                <small class="text-muted" id="modal-file-title"></small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4" id="modal-body-content">
+                        <!-- Populated dynamically via JS -->
+                    </div>
+                    <div class="modal-footer border-top">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
 
-       
+        <!-- Hidden JSON store for modal quick lookup -->
+        <script>
+            const DCR_DATA = {{ reports|tojson|safe if reports else "[]" }};
+        </script>
+
         {% include "includes/js.html" %}
+
+        <!-- Client-Side Search, Filter, Sort, Pagination & Modal Controller -->
+        <script>
+            let currentPage = 1;
+            let pageSize = 25;
+            let filteredRows = [];
+
+            document.addEventListener('DOMContentLoaded', () => {
+                if (window.lucide) {
+                    lucide.createIcons();
+                }
+                initTableRows();
+            });
+
+            function initTableRows() {
+                const tbody = document.getElementById('dcr-records-tbody');
+                if (!tbody) return;
+                const rows = Array.from(tbody.querySelectorAll('tr.dcr-data-row'));
+                filteredRows = rows;
+                renderPagination();
+            }
+
+            function filterDcrTable() {
+                const query = document.getElementById('dcr-search-input').value.toLowerCase().trim();
+                const tbody = document.getElementById('dcr-records-tbody');
+                const allRows = Array.from(tbody.querySelectorAll('tr.dcr-data-row'));
+
+                filteredRows = allRows.filter(row => {
+                    const file = (row.getAttribute('data-file') || '').toLowerCase();
+                    const cinema = (row.getAttribute('data-cinema') || '').toLowerCase();
+                    return file.includes(query) || cinema.includes(query);
+                });
+
+                allRows.forEach(r => r.style.display = 'none');
+                currentPage = 1;
+                renderPagination();
+            }
+
+            function sortDcrTable() {
+                const sortType = document.getElementById('dcr-sort-select').value;
+                const tbody = document.getElementById('dcr-records-tbody');
+
+                filteredRows.sort((a, b) => {
+                    const netA = parseFloat(a.getAttribute('data-net') || 0);
+                    const netB = parseFloat(b.getAttribute('data-net') || 0);
+                    const cinA = (a.getAttribute('data-cinema') || '').toLowerCase();
+                    const cinB = (b.getAttribute('data-cinema') || '').toLowerCase();
+                    const fileA = (a.getAttribute('data-file') || '').toLowerCase();
+                    const fileB = (b.getAttribute('data-file') || '').toLowerCase();
+
+                    if (sortType === 'net-desc') return netB - netA;
+                    if (sortType === 'net-asc') return netA - netB;
+                    if (sortType === 'cinema-asc') return cinA.localeCompare(cinB);
+                    if (sortType === 'file-asc') return fileA.localeCompare(fileB);
+                    return 0;
+                });
+
+                filteredRows.forEach(row => tbody.appendChild(row));
+                renderPagination();
+            }
+
+            function changePageSize() {
+                const val = document.getElementById('dcr-pagesize-select').value;
+                pageSize = val === 'all' ? 999999 : parseInt(val, 10);
+                currentPage = 1;
+                renderPagination();
+            }
+
+            function renderPagination() {
+                const total = filteredRows.length;
+                const totalPages = Math.ceil(total / pageSize) || 1;
+                if (currentPage > totalPages) currentPage = totalPages;
+
+                const startIdx = (currentPage - 1) * pageSize;
+                const endIdx = Math.min(startIdx + pageSize, total);
+
+                // Show only paginated rows
+                filteredRows.forEach((row, i) => {
+                    row.style.display = (i >= startIdx && i < endIdx) ? '' : 'none';
+                });
+
+                // Update counters
+                const counter = document.getElementById('dcr-showing-counter');
+                if (counter) counter.textContent = `Showing ${Math.min(startIdx + 1, total)}-${endIdx} of ${total}`;
+
+                const summary = document.getElementById('dcr-pagination-summary');
+                if (summary) summary.textContent = `Showing ${Math.min(startIdx + 1, total)} to ${endIdx} of ${total} records`;
+
+                // Render page buttons
+                const nav = document.getElementById('dcr-pagination-nav');
+                if (!nav) return;
+                nav.innerHTML = '';
+
+                if (totalPages <= 1) return;
+
+                const prevLi = document.createElement('li');
+                prevLi.className = `page-item ${currentPage === 1 ? 'disabled' : ''}`;
+                prevLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage - 1})">Prev</button>`;
+                nav.appendChild(prevLi);
+
+                for (let p = 1; p <= totalPages; p++) {
+                    if (p === 1 || p === totalPages || (p >= currentPage - 2 && p <= currentPage + 2)) {
+                        const li = document.createElement('li');
+                        li.className = `page-item ${p === currentPage ? 'active' : ''}`;
+                        li.innerHTML = `<button class="page-link" onclick="goToPage(${p})">${p}</button>`;
+                        nav.appendChild(li);
+                    }
+                }
+
+                const nextLi = document.createElement('li');
+                nextLi.className = `page-item ${currentPage === totalPages ? 'disabled' : ''}`;
+                nextLi.innerHTML = `<button class="page-link" onclick="goToPage(${currentPage + 1})">Next</button>`;
+                nav.appendChild(nextLi);
+            }
+
+            function goToPage(page) {
+                currentPage = page;
+                renderPagination();
+            }
+
+            function viewReportModal(reportId) {
+                const report = DCR_DATA.find(r => r.id === reportId || r._id === reportId);
+                if (!report) return;
+
+                document.getElementById('modal-file-title').textContent = report.file_name || 'Report Details';
+
+                const details = report.details || report.report_data || [];
+                let detailsRowsHtml = '';
+
+                if (Array.isArray(details) && details.length > 0) {
+                    details.forEach(item => {
+                        const day = item.day || item.Day || '-';
+                        const shows = item.shows !== undefined ? item.shows : (item.Shows || 0);
+                        const aud = item.audience !== undefined ? item.audience : (item.Attendance || 0);
+                        const net = item.final_net !== undefined ? item.final_net : (item.Nett || '0.00');
+
+                        detailsRowsHtml += `
+                            <tr>
+                                <td class="fw-semibold">${day}</td>
+                                <td class="text-center"><span class="badge bg-secondary-subtle text-secondary px-2">${shows}</span></td>
+                                <td class="text-end fw-medium">${Number(aud).toLocaleString()}</td>
+                                <td class="text-end fw-bold text-success">₹ ${Number(net).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</td>
+                            </tr>
+                        `;
+                    });
+                } else {
+                    detailsRowsHtml = `<tr><td colspan="4" class="text-center text-muted">No individual day rows recorded</td></tr>`;
+                }
+
+                const modalBody = document.getElementById('modal-body-content');
+                modalBody.innerHTML = `
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-semibold">Cinema / Theatre</label>
+                            <div class="fw-bold fs-6">${report.cinema_name || 'Unknown'}</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="text-muted small text-uppercase fw-semibold">Grand Total Collection</label>
+                            <div class="fw-bold fs-5 text-primary">₹ ${Number(report.grand_total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="col-12">
+                            <label class="text-muted small text-uppercase fw-semibold">Distributor / Theatre Address</label>
+                            <div class="p-2 rounded bg-light border text-secondary small" style="white-space: pre-line;">${report.distributor_address || 'No address text extracted'}</div>
+                        </div>
+                    </div>
+
+                    <h6 class="fw-bold mb-2">Daily Breakdown</h6>
+                    <div class="table-responsive rounded border mb-2">
+                        <table class="table table-sm table-striped mb-0" style="font-size: 0.85rem;">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Day / Date</th>
+                                    <th class="text-center">Shows</th>
+                                    <th class="text-end">Attendance</th>
+                                    <th class="text-end">Nett Collection</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${detailsRowsHtml}
+                            </tbody>
+                        </table>
+                    </div>
+                `;
+
+                const modal = new bootstrap.Modal(document.getElementById('reportDetailsModal'));
+                modal.show();
+                if (window.lucide) lucide.createIcons();
+            }
+
+            async function deleteReportRecord(reportId, fileName) {
+                if (!confirm(`Are you sure you want to delete the report for "${fileName}" from MongoDB?`)) {
+                    return;
+                }
+
+                try {
+                    const resp = await fetch(`/api/records/delete/${reportId}`, { method: 'POST' });
+                    const result = await resp.json();
+                    if (result.status) {
+                        const row = document.querySelector(`tr.dcr-data-row[data-id="${reportId}"]`);
+                        if (row) {
+                            row.remove();
+                            initTableRows();
+                        }
+                    } else {
+                        alert(result.message || 'Error deleting record.');
+                    }
+                } catch (e) {
+                    alert('Network error while deleting record.');
+                }
+            }
+
+            async function confirmClearAll() {
+                if (!confirm('Are you sure you want to clear ALL extracted DCR records from MongoDB? This action cannot be undone.')) {
+                    return;
+                }
+
+                try {
+                    const resp = await fetch('/api/records/clear-all', { method: 'POST' });
+                    const result = await resp.json();
+                    if (result.status) {
+                        window.location.reload();
+                    } else {
+                        alert(result.message || 'Error clearing records.');
+                    }
+                } catch (e) {
+                    alert('Network error while clearing records.');
+                }
+            }
+        </script>
     </body>
 </html>
