@@ -15,7 +15,7 @@ from helpers.common_helper import (
     extract_address_safe,
     extract_cinema_name_safe,
 )
-from helpers.database_helper import createrecords, bulk_createrecords
+from helpers.database_helper import insert_dcr_report
 
 logger = logging.getLogger(__name__)
 
@@ -61,42 +61,29 @@ async def createprocessmethod(request: Request, pdfpostfiles: List[UploadFile] =
                 address = extract_address_safe(pdf)
                 cinemaname = extract_cinema_name_safe(pdf, fallback_name=onepdf.filename)
 
-                # 3. Insert parent report record using parameterized query
-                sql_insert_report = """
-                    INSERT INTO dcr_reports
-                    (file_name, report_data, report_date, distributor_address, cinema_name)
-                    VALUES (:file_name, :report_data, :report_date, :distributor_address, :cinema_name)
-                """
-                report_params = {
-                    "file_name": onepdf.filename,
-                    "report_data": json.dumps(response_data),
-                    "report_date": int(pdfdate.timestamp()),
-                    "distributor_address": address,
-                    "cinema_name": cinemaname,
-                }
-                report_id = await createrecords(sql_insert_report, report_params)
-
-                # 4. Insert child detail records using parameterized bulk insert
-                sql_insert_detail = """
-                    INSERT INTO dcr_report_details
-                    (report_id, day, shows, audience, final_net)
-                    VALUES (:report_id, :day, :shows, :audience, :final_net)
-                """
-                detail_params_list = []
+                # 3. Format daily detail records
+                detail_records = []
                 for item in response_data:
                     day_val = item.get("Day") or item.get("day") or ""
                     if not day_val:
                         continue
-                    detail_params_list.append({
-                        "report_id": report_id,
+                    detail_records.append({
                         "day": day_val,
                         "shows": item.get("Shows", 0),
                         "audience": item.get("Attendance", 0),
                         "final_net": str(item.get("Nett", "0.00")),
                     })
 
-                if detail_params_list:
-                    await bulk_createrecords(sql_insert_detail, detail_params_list)
+                # 4. Insert report with precomputed aggregates into MongoDB
+                report_payload = {
+                    "file_name": onepdf.filename,
+                    "report_data": response_data,
+                    "report_date": int(pdfdate.timestamp()),
+                    "distributor_address": address,
+                    "cinema_name": cinemaname,
+                    "details": detail_records,
+                }
+                report_id = await insert_dcr_report(report_payload)
 
                 # 5. Record successful upload (ONCE per file)
                 uploaded_files.append({
@@ -105,7 +92,7 @@ async def createprocessmethod(request: Request, pdfpostfiles: List[UploadFile] =
                     "date": pdfdate.strftime("%d/%m/%Y"),
                     "address": address,
                     "cinema_name": cinemaname,
-                    "records_count": len(detail_params_list)
+                    "records_count": len(detail_records)
                 })
 
         except Exception as e:

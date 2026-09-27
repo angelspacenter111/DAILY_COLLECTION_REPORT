@@ -5,8 +5,12 @@ python-multipart
 pdfplumber
 pandas
 openpyxl
+pymongo
+motor
+dnspython
+certifi
+httpx
+reportlab
 sqlalchemy
 pymysql
 cryptography
-httpx
-reportlab
