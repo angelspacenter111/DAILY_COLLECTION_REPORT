@@ -6,9 +6,17 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from helpers.database_helper import init_db_indexes
 
+import asyncio
+import logging
+
+logger = logging.getLogger(__name__)
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    await init_db_indexes()
+    try:
+        await asyncio.wait_for(init_db_indexes(), timeout=4.0)
+    except Exception as e:
+        logger.warning("Startup index initialization notice: %s", str(e))
     yield
 
 app = FastAPI(lifespan=lifespan)

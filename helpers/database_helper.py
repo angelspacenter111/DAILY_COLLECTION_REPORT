@@ -1,8 +1,10 @@
+import asyncio
 import logging
 import re
 from datetime import datetime
 from typing import Any, Dict, List, Optional
 from bson import ObjectId
+from pymongo.errors import AutoReconnect, PyMongoError
 from database import db
 
 logger = logging.getLogger(__name__)
@@ -55,35 +57,52 @@ async def insert_dcr_report(report_payload: Dict[str, Any]) -> str:
         **aggregates
     }
 
-    result = await db.dcr_reports.insert_one(doc)
-    return str(result.inserted_id)
+    for attempt in range(3):
+        try:
+            result = await db.dcr_reports.insert_one(doc)
+            return str(result.inserted_id)
+        except AutoReconnect as e:
+            if attempt < 2:
+                logger.warning("MongoDB AutoReconnect on insert (attempt %d/3), retrying in 0.5s...", attempt + 1)
+                await asyncio.sleep(0.5 * (attempt + 1))
+                continue
+            logger.error("MongoDB insert failed after retries: %s", str(e))
+            raise
 
 async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
     """
     Fetches all DCR reports from MongoDB 'dcr_reports' collection.
     Maintains compatibility with existing templates and Excel exports.
     """
-    try:
-        cursor = db.dcr_reports.find({}).sort("_id", 1)
-        reports: List[Dict[str, Any]] = []
-        async for doc in cursor:
-            doc["id"] = str(doc.get("_id", ""))
-            doc["_id"] = str(doc.get("_id", ""))
-            if isinstance(doc.get("created_at"), datetime):
-                doc["created_at"] = doc["created_at"].isoformat()
-            reports.append(doc)
-        return reports
-    except Exception as e:
-        logger.error("Failed to fetch records from MongoDB: %s", str(e))
-        return []
+    for attempt in range(3):
+        try:
+            cursor = db.dcr_reports.find({}).sort("_id", 1)
+            reports: List[Dict[str, Any]] = []
+            async for doc in cursor:
+                doc["id"] = str(doc.get("_id", ""))
+                doc["_id"] = str(doc.get("_id", ""))
+                if isinstance(doc.get("created_at"), datetime):
+                    doc["created_at"] = doc["created_at"].isoformat()
+                reports.append(doc)
+            return reports
+        except AutoReconnect as e:
+            if attempt < 2:
+                logger.warning("MongoDB AutoReconnect on fetch (attempt %d/3), retrying...", attempt + 1)
+                await asyncio.sleep(0.5 * (attempt + 1))
+                continue
+            logger.error("MongoDB fetch failed after retries: %s", str(e))
+            return []
+        except Exception as e:
+            logger.error("Failed to fetch records from MongoDB: %s", str(e))
+            return []
 
 async def init_db_indexes():
     """Ensures performance indexes exist on dcr_reports collection."""
     try:
-        await db.dcr_reports.create_index([("created_at", -1)])
-        await db.dcr_reports.create_index([("report_date", -1)])
-        await db.dcr_reports.create_index([("file_name", 1)])
-    except Exception as e:
+        await db.dcr_reports.create_index([("created_at", -1)], background=True)
+        await db.dcr_reports.create_index([("report_date", -1)], background=True)
+        await db.dcr_reports.create_index([("file_name", 1)], background=True)
+    except (AutoReconnect, PyMongoError) as e:
         logger.warning("Index creation notice: %s", str(e))
 
 async def delete_dcr_report(report_id: str) -> bool:
