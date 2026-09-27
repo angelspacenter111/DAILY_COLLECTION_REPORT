@@ -1,0 +1,481 @@
+<!doctype html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Extracted Records | AeroData XLS</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" />
+        <link href="assets/css/style.css" rel="stylesheet" />
+    </head>
+    <body>
+        <div class="app-container">
+            <aside class="app-sidebar" id="sidebar">
+                <div class="sidebar-logo">
+                    <div class="brand-icon">A</div>
+                    <span class="brand-name">AeroData XLS</span>
+                </div>
+
+                <nav class="sidebar-menu">
+                    <a href="dashboard.html" class="sidebar-nav-link">
+                        <i data-lucide="layout-dashboard"></i>
+                        <span>Dashboard</span>
+                    </a>
+                    <a href="pdf-uploads.html" class="sidebar-nav-link">
+                        <i data-lucide="file-up"></i>
+                        <span>PDF Uploads</span>
+                    </a>
+                    <a href="processing-queue.html" class="sidebar-nav-link">
+                        <i data-lucide="play-circle"></i>
+                        <span>Processing Queue</span>
+                    </a>
+                    <a href="extracted-records.html" class="sidebar-nav-link">
+                        <i data-lucide="database"></i>
+                        <span>Extracted Records</span>
+                    </a>
+                    <a href="excel-management.html" class="sidebar-nav-link">
+                        <i data-lucide="file-spreadsheet"></i>
+                        <span>Excel Management</span>
+                    </a>
+                    <a href="reports.html" class="sidebar-nav-link">
+                        <i data-lucide="bar-chart-3"></i>
+                        <span>Reports & Analytics</span>
+                    </a>
+                    <a href="activity-logs.html" class="sidebar-nav-link">
+                        <i data-lucide="clipboard-list"></i>
+                        <span>Activity Logs</span>
+                    </a>
+                    <a href="users.html" class="sidebar-nav-link">
+                        <i data-lucide="users"></i>
+                        <span>User Management</span>
+                    </a>
+                    <a href="settings.html" class="sidebar-nav-link">
+                        <i data-lucide="settings"></i>
+                        <span>Settings</span>
+                    </a>
+                </nav>
+
+                <div class="sidebar-footer">
+                    <div class="d-flex align-items-center">
+                        <img
+                            src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+                            alt="Admin"
+                            class="avatar-img me-2"
+                        />
+                        <div>
+                            <div class="fw-bold" style="font-size: 0.85rem" id="user-role-display">Sarah Connor</div>
+                            <div class="text-muted" style="font-size: 0.75rem">Super Admin</div>
+                        </div>
+                    </div>
+                </div>
+            </aside>
+
+            <main class="app-content">
+                <header class="app-header">
+                    <div class="d-flex align-items-center">
+                        <button
+                            class="btn btn-link d-lg-none p-0 me-3 text-main"
+                            id="mobile-toggle"
+                            aria-label="Toggle Sidebar"
+                        >
+                            <i data-lucide="menu"></i>
+                        </button>
+
+                        <div class="header-search">
+                            <div class="input-group">
+                                <span class="input-group-text"
+                                    ><i data-lucide="search" style="width: 16px; height: 16px"></i
+                                ></span>
+                                <input
+                                    type="text"
+                                    class="form-control"
+                                    placeholder="Search invoices, files..."
+                                    id="global-search-input"
+                                />
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="header-actions">
+                        <div class="status-pill" id="processing-status-indicator">
+                            <span class="status-dot"></span>
+                            <span class="status-text">System Idle</span>
+                        </div>
+
+                        <button class="header-btn" id="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">
+                            <i data-lucide="moon" id="theme-icon"></i>
+                        </button>
+
+                        <div class="dropdown">
+                            <button
+                                class="header-btn dropdown-toggle no-caret"
+                                id="notif-dropdown-btn"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                                aria-label="Notifications"
+                            >
+                                <i data-lucide="bell"></i>
+                                <span class="badge-dot" id="notif-badge"></span>
+                            </button>
+                            <ul
+                                class="dropdown-menu dropdown-menu-end shadow-lg py-2 modal-content-custom"
+                                style="width: 320px"
+                                aria-labelledby="notif-dropdown-btn"
+                                id="notif-dropdown-list"
+                            >
+                                <li
+                                    class="px-3 py-2 border-bottom border-color d-flex justify-content-between align-items-center"
+                                >
+                                    <span class="fw-bold">Notifications</span>
+                                    <a
+                                        href="#"
+                                        class="text-primary text-decoration-none"
+                                        style="font-size: 0.8rem"
+                                        id="clear-notifs-btn"
+                                        >Clear All</a
+                                    >
+                                </li>
+                                <div id="notif-items-container" style="max-height: 240px; overflow-y: auto">
+                                    <li
+                                        class="px-3 py-3 border-bottom border-color text-center text-muted"
+                                        style="font-size: 0.85rem"
+                                    >
+                                        No new notifications
+                                    </li>
+                                </div>
+                            </ul>
+                        </div>
+
+                        <div class="dropdown">
+                            <div
+                                class="avatar-wrapper dropdown-toggle"
+                                id="profile-dropdown-btn"
+                                data-bs-toggle="dropdown"
+                                aria-expanded="false"
+                            >
+                                <img
+                                    src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80"
+                                    alt="Sarah Connor"
+                                    class="avatar-img"
+                                />
+                            </div>
+                            <ul
+                                class="dropdown-menu dropdown-menu-end shadow-lg modal-content-custom"
+                                aria-labelledby="profile-dropdown-btn"
+                            >
+                                <li class="px-3 py-2 border-bottom border-color">
+                                    <div class="fw-bold">Sarah Connor</div>
+                                    <div class="text-muted" style="font-size: 0.8rem">sarah.c@aerodata.io</div>
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="settings.html"
+                                        ><i data-lucide="user" class="me-2" style="width: 16px"></i> My Profile</a
+                                    >
+                                </li>
+                                <li>
+                                    <a class="dropdown-item py-2" href="settings.html"
+                                        ><i data-lucide="settings" class="me-2" style="width: 16px"></i> Account
+                                        Settings</a
+                                    >
+                                </li>
+                                <li><hr class="dropdown-divider border-color" /></li>
+                                <li>
+                                    <a class="dropdown-item py-2 text-danger" href="#" id="logout-btn"
+                                        ><i data-lucide="log-out" class="me-2" style="width: 16px"></i> Sign Out</a
+                                    >
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </header>
+
+                <section class="page-container" id="records-view-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">Extracted Records</h1>
+                            <p class="text-muted mb-0">
+                                Review, query, filter, and edit data fields extracted from files.
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary" id="bulk-delete-records-btn">Bulk Delete</button>
+                            <button class="btn btn-success" id="records-download-csv-btn">
+                                <i data-lucide="download" class="me-1"></i> Export Selected
+                            </button>
+                        </div>
+                    </div>
+
+                    <div class="card-custom mb-4">
+                        <div class="row g-3">
+                            <div class="col-12 col-md-3">
+                                <label class="form-label fw-semibold" style="font-size: 0.8rem">Text Search</label>
+                                <div class="input-group">
+                                    <span class="input-group-text"
+                                        ><i data-lucide="search" style="width: 14px; height: 14px"></i
+                                    ></span>
+                                    <input
+                                        type="text"
+                                        class="form-control form-control-custom"
+                                        id="records-search"
+                                        placeholder="Customer, invoice #..."
+                                    />
+                                </div>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label fw-semibold" style="font-size: 0.8rem"
+                                    >Filter PDF Source</label
+                                >
+                                <select class="form-select form-select-custom" id="records-filter-pdf">
+                                    <option value="All">All Documents</option>
+                                </select>
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label fw-semibold" style="font-size: 0.8rem">Min Amount ($)</label>
+                                <input
+                                    type="number"
+                                    class="form-control form-control-custom"
+                                    id="records-filter-min-amt"
+                                    placeholder="0"
+                                />
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label fw-semibold" style="font-size: 0.8rem">Max Amount ($)</label>
+                                <input
+                                    type="number"
+                                    class="form-control form-control-custom"
+                                    id="records-filter-max-amt"
+                                    placeholder="99999"
+                                />
+                            </div>
+                            <div class="col-6 col-md-2">
+                                <label class="form-label fw-semibold" style="font-size: 0.8rem">Status</label>
+                                <select class="form-select form-select-custom" id="records-filter-status">
+                                    <option value="All">All Statuses</option>
+                                    <option value="Valid">Valid</option>
+                                    <option value="Review">Needs Review</option>
+                                    <option value="Invalid">Invalid</option>
+                                </select>
+                            </div>
+                            <div class="col-12 col-md-1 d-flex align-items-end">
+                                <button
+                                    class="btn btn-outline-secondary w-100 py-2"
+                                    id="reset-records-filters"
+                                    title="Reset Filters"
+                                >
+                                    <i data-lucide="rotate-ccw"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-custom mb-3">
+                        <table class="table table-custom">
+                            <thead>
+                                <tr>
+                                    <th style="width: 40px">
+                                        <input type="checkbox" id="select-all-records-checkbox" />
+                                    </th>
+                                    <th data-sort="id">Record ID</th>
+                                    <th data-sort="fileName">Source PDF</th>
+                                    <th data-sort="invoiceNum">Invoice Number</th>
+                                    <th data-sort="customer">Customer Name</th>
+                                    <th data-sort="date">Date</th>
+                                    <th data-sort="amount">Amount</th>
+                                    <th data-sort="tax">Tax</th>
+                                    <th data-sort="status">Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-tbody"></tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted" style="font-size: 0.85rem" id="records-pagination-info">
+                            Showing 0 to 0 of 0 records
+                        </div>
+                        <nav aria-label="Records pagination">
+                            <ul class="pagination pagination-sm mb-0" id="records-pagination-list"></ul>
+                        </nav>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <div class="drawer-backdrop" id="record-drawer-backdrop"></div>
+        <aside class="drawer-custom" id="record-detail-drawer">
+            <div class="drawer-header">
+                <div>
+                    <h4 class="h5 fw-bold mb-0">Extraction Details</h4>
+                    <span class="text-muted" style="font-size: 0.75rem" id="drawer-subtitle-id">ID: REC-0000</span>
+                </div>
+                <button class="btn btn-link p-0 text-muted" id="close-drawer-btn" aria-label="Close drawer">
+                    <i data-lucide="x" style="width: 24px; height: 24px"></i>
+                </button>
+            </div>
+
+            <div class="drawer-body">
+                <div class="card-custom mb-3 bg-white">
+                    <h5 class="h6 fw-bold mb-3">
+                        <i data-lucide="file-text" class="me-2 text-primary" style="width: 16px"></i> Original PDF
+                        Information
+                    </h5>
+                    <div class="row g-2" style="font-size: 0.85rem">
+                        <div class="col-4 text-muted">File Name:</div>
+                        <div class="col-8 fw-semibold text-break" id="drawer-file-name">invoice_doc_102.pdf</div>
+
+                        <div class="col-4 text-muted">File Category:</div>
+                        <div class="col-8" id="drawer-file-category">
+                            <span class="badge-custom badge-primary-custom">Invoice</span>
+                        </div>
+
+                        <div class="col-4 text-muted">Import Date:</div>
+                        <div class="col-8 text-muted" id="drawer-file-date">2026-07-12 14:23:45</div>
+                    </div>
+                </div>
+
+                <div class="card-custom mb-3 bg-white">
+                    <h5 class="h6 fw-bold mb-3">
+                        <i data-lucide="database" class="me-2 text-success" style="width: 16px"></i> Extracted Data
+                        Fields
+                    </h5>
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0" style="font-size: 0.85rem">
+                            <thead>
+                                <tr class="bg-light">
+                                    <th>Field Name</th>
+                                    <th>Extracted Value</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody id="drawer-fields-tbody"></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="card-custom mb-3 bg-white">
+                    <h5 class="h6 fw-bold mb-3">
+                        <i data-lucide="shield-check" class="me-2 text-warning" style="width: 16px"></i> Schema
+                        Validation Checklist
+                    </h5>
+                    <div
+                        class="d-flex flex-column gap-2"
+                        style="font-size: 0.85rem"
+                        id="drawer-validation-container"
+                    ></div>
+                </div>
+
+                <div class="card-custom bg-white">
+                    <h5 class="h6 fw-bold mb-3">
+                        <i data-lucide="history" class="me-2 text-secondary" style="width: 16px"></i> Processing History
+                    </h5>
+                    <div
+                        class="d-flex flex-column gap-3 border-start border-color ps-3 ms-2 position-relative"
+                        style="font-size: 0.8rem"
+                        id="drawer-history-container"
+                    ></div>
+                </div>
+            </div>
+        </aside>
+
+        <div
+            class="modal fade"
+            id="editRecordModal"
+            tabindex="-1"
+            aria-labelledby="editRecordModalLabel"
+            aria-hidden="true"
+        >
+            <div class="modal-dialog modal-dialog-centered">
+                <div class="modal-content modal-content-custom">
+                    <div class="modal-header modal-header-custom">
+                        <h5 class="modal-title fw-bold" id="editRecordModalLabel">Edit Extracted Fields</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <form id="edit-record-form">
+                        <div class="modal-body">
+                            <input type="hidden" id="edit-record-idx" />
+
+                            <div class="mb-3">
+                                <label for="edit-customer" class="form-label fw-semibold" style="font-size: 0.85rem"
+                                    >Customer / Vendor Name</label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control form-control-custom"
+                                    id="edit-customer"
+                                    required
+                                />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="edit-invoice-num" class="form-label fw-semibold" style="font-size: 0.85rem"
+                                    >Invoice / Reference ID</label
+                                >
+                                <input
+                                    type="text"
+                                    class="form-control form-control-custom"
+                                    id="edit-invoice-num"
+                                    required
+                                />
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="edit-date" class="form-label fw-semibold" style="font-size: 0.85rem"
+                                    >Billing Date</label
+                                >
+                                <input type="date" class="form-control form-control-custom" id="edit-date" required />
+                            </div>
+
+                            <div class="row g-3 mb-3">
+                                <div class="col-6">
+                                    <label for="edit-amount" class="form-label fw-semibold" style="font-size: 0.85rem"
+                                        >Amount ($)</label
+                                    >
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        class="form-control form-control-custom"
+                                        id="edit-amount"
+                                        required
+                                    />
+                                </div>
+                                <div class="col-6">
+                                    <label for="edit-tax" class="form-label fw-semibold" style="font-size: 0.85rem"
+                                        >Tax ($)</label
+                                    >
+                                    <input
+                                        type="number"
+                                        step="0.01"
+                                        class="form-control form-control-custom"
+                                        id="edit-tax"
+                                        required
+                                    />
+                                </div>
+                            </div>
+
+                            <div class="mb-3">
+                                <label for="edit-status" class="form-label fw-semibold" style="font-size: 0.85rem"
+                                    >Validation Status</label
+                                >
+                                <select class="form-select form-select-custom" id="edit-status">
+                                    <option value="Valid">Valid</option>
+                                    <option value="Review">Needs Review</option>
+                                    <option value="Invalid">Invalid</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="modal-footer modal-footer-custom">
+                            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
+                                Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary">Save Changes</button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="https://unpkg.com/lucide@latest"></script>
+        <script src="assets/js/app.js" defer></script>
+    </body>
+</html>

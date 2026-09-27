@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PDF Uploads | AeroData XLS</title>
+        {% include "includes/css.html" %}
+    </head>
+    <body>
+        <div class="app-container">
+            {% include "includes/sidebar.html" %}
+            <main class="app-content">
+                {% include "includes/header.html" %}
+                <section class="page-container" id="uploads-view-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">DCR Process Result</h1>
+                            <p class="text-muted mb-0">{{ message }}</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a href="/create" class="btn btn-outline-primary btn-sm"><i data-lucide="upload" class="me-1"></i> Upload More</a>
+                            <a href="/dcrextracter" class="btn btn-primary btn-sm"><i data-lucide="table" class="me-1"></i> View Extracted Records</a>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <div class="card-custom d-none" id="active-uploads-progress-card">
+                                <h3 class="h5 fw-bold mb-3">Active Upload Progress</h3>
+                                <div id="active-uploads-progress-container" class="d-flex flex-column gap-3">
+                                </div>
+                            </div>
+                            <div class="card-custom h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h5 fw-bold mb-0">System PDF Registry</h3>
+                                </div>
+                                <div class="table-responsive-custom">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>File Name</th>
+                                                <th>Status</th>
+                                                <th>Details / Reason</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="pdf-registry-tbody">
+                                            {% for successfile in uploaded_files %}
+                                                <tr>
+                                                    <td class="fw-semibold text-break">{{ successfile.file_name }}</td>
+                                                    <td>
+                                                        <span class="badge-custom badge-success-custom"> Success </span>
+                                                    </td>
+                                                    <td class="text-muted" style="font-size: 0.85rem">
+                                                        Date: {{ successfile.date }} | Cinema: {{ successfile.cinema_name or 'N/A' }} | {{ successfile.records_count }} days extracted
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                            {% for failedfile in failed_files %}
+                                                <tr>
+                                                    <td class="fw-semibold text-break">{{ failedfile.file_name }}</td>
+                                                    <td>
+                                                        <span class="badge-custom badge-error-custom">
+                                                        Failed
+                                                        </span>
+                                                    </td>
+                                                    <td class="text-danger" style="font-size: 0.85rem">{{ failedfile.reason }}</td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        {% include "includes/js.html" %}
+    </body>
+</html>

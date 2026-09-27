@@ -1,0 +1,33 @@
+<header class="app-header">
+    <div class="d-flex align-items-center">
+        <button class="btn btn-link d-lg-none p-0 me-3 text-main" id="mobile-toggle" aria-label="Toggle Sidebar">
+        <i data-lucide="menu"></i>
+        </button>
+        <div class="header-search">
+            <div class="input-group">
+                <span class="input-group-text"><i data-lucide="search" style="width: 16px; height: 16px;"></i></span>
+                <input type="text" class="form-control" placeholder="Search invoices, files..." id="global-search-input">
+            </div>
+        </div>
+    </div>
+    <div class="header-actions">
+        
+        <div class="dropdown">
+            <div class="avatar-wrapper dropdown-toggle" id="profile-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Sarah Connor" class="avatar-img">
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg modal-content-custom" aria-labelledby="profile-dropdown-btn">
+                <li class="px-3 py-2 border-bottom border-color">
+                    <div class="fw-bold">Sarah Connor</div>
+                    <div class="text-muted" style="font-size: 0.8rem;">sarah.c@aerodata.io</div>
+                </li>
+                <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="user" class="me-2" style="width: 16px;"></i> My Profile</a></li>
+                <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="settings" class="me-2" style="width: 16px;"></i> Account Settings</a></li>
+                <li>
+                    <hr class="dropdown-divider border-color">
+                </li>
+                <li><a class="dropdown-item py-2 text-danger" href="#" id="logout-btn"><i data-lucide="log-out" class="me-2" style="width: 16px;"></i> Sign Out</a></li>
+            </ul>
+        </div>
+    </div>
+</header>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reports & Analytics | AeroData XLS</title>
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="brand-icon">A</div>
+        <span class="brand-name">AeroData XLS</span>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <a href="dashboard.html" class="sidebar-nav-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="pdf-uploads.html" class="sidebar-nav-link">
+          <i data-lucide="file-up"></i>
+          <span>PDF Uploads</span>
+        </a>
+        <a href="processing-queue.html" class="sidebar-nav-link">
+          <i data-lucide="play-circle"></i>
+          <span>Processing Queue</span>
+        </a>
+        <a href="extracted-records.html" class="sidebar-nav-link">
+          <i data-lucide="database"></i>
+          <span>Extracted Records</span>
+        </a>
+        <a href="excel-management.html" class="sidebar-nav-link">
+          <i data-lucide="file-spreadsheet"></i>
+          <span>Excel Management</span>
+        </a>
+        <a href="reports.html" class="sidebar-nav-link">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Reports & Analytics</span>
+        </a>
+        <a href="activity-logs.html" class="sidebar-nav-link">
+          <i data-lucide="clipboard-list"></i>
+          <span>Activity Logs</span>
+        </a>
+        <a href="users.html" class="sidebar-nav-link">
+          <i data-lucide="users"></i>
+          <span>User Management</span>
+        </a>
+        <a href="settings.html" class="sidebar-nav-link">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Admin" class="avatar-img me-2">
+          <div>
+            <div class="fw-bold" style="font-size: 0.85rem;" id="user-role-display">Sarah Connor</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Super Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <main class="app-content">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="app-header">
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link d-lg-none p-0 me-3 text-main" id="mobile-toggle" aria-label="Toggle Sidebar">
+            <i data-lucide="menu"></i>
+          </button>
+          
+          <div class="header-search">
+            <div class="input-group">
+              <span class="input-group-text"><i data-lucide="search" style="width: 16px; height: 16px;"></i></span>
+              <input type="text" class="form-control" placeholder="Search invoices, files..." id="global-search-input">
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <div class="status-pill" id="processing-status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text">System Idle</span>
+          </div>
+          
+          <button class="header-btn" id="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">
+            <i data-lucide="moon" id="theme-icon"></i>
+          </button>
+          
+          <div class="dropdown">
+            <button class="header-btn dropdown-toggle no-caret" id="notif-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+              <i data-lucide="bell"></i>
+              <span class="badge-dot" id="notif-badge"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 modal-content-custom" style="width: 320px;" aria-labelledby="notif-dropdown-btn" id="notif-dropdown-list">
+              <li class="px-3 py-2 border-bottom border-color d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Notifications</span>
+                <a href="#" class="text-primary text-decoration-none" style="font-size: 0.8rem;" id="clear-notifs-btn">Clear All</a>
+              </li>
+              <div id="notif-items-container" style="max-height: 240px; overflow-y: auto;">
+                <li class="px-3 py-3 border-bottom border-color text-center text-muted" style="font-size: 0.85rem;">No new notifications</li>
+              </div>
+            </ul>
+          </div>
+          
+          <div class="dropdown">
+            <div class="avatar-wrapper dropdown-toggle" id="profile-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Sarah Connor" class="avatar-img">
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg modal-content-custom" aria-labelledby="profile-dropdown-btn">
+              <li class="px-3 py-2 border-bottom border-color">
+                <div class="fw-bold">Sarah Connor</div>
+                <div class="text-muted" style="font-size: 0.8rem;">sarah.c@aerodata.io</div>
+              </li>
+              <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="user" class="me-2" style="width: 16px;"></i> My Profile</a></li>
+              <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="settings" class="me-2" style="width: 16px;"></i> Account Settings</a></li>
+              <li><hr class="dropdown-divider border-color"></li>
+              <li><a class="dropdown-item py-2 text-danger" href="#" id="logout-btn"><i data-lucide="log-out" class="me-2" style="width: 16px;"></i> Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <section class="page-container" id="reports-view-wrapper">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 fw-bold mb-1">Reports & Analytics</h1>
+            <p class="text-muted mb-0">High-fidelity metrics reporting daily, monthly processing counts, and category benchmarks.</p>
+          </div>
+          <button class="btn btn-primary" id="export-analytics-pdf-btn" onclick="alert('Analytics PDF compilation started.');">
+            <i data-lucide="download" class="me-1"></i> Export PDF Report
+          </button>
+        </div>
+
+        <!-- KPI SUMMARY -->
+        <div class="row g-4 mb-4">
+          <div class="col-6 col-lg-3">
+            <div class="card-custom mb-0">
+              <div class="text-muted" style="font-size: 0.8rem;">DAILY AVG RUNTIME</div>
+              <h2 class="fw-bold my-1 text-primary" id="reports-avg-time">1.8s</h2>
+              <p class="text-muted mb-0" style="font-size: 0.75rem;">Average OCR parse rate per PDF</p>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card-custom mb-0">
+              <div class="text-muted" style="font-size: 0.8rem;">ACCURACY LEVEL</div>
+              <h2 class="fw-bold my-1 text-success" id="reports-accuracy">99.4%</h2>
+              <p class="text-muted mb-0" style="font-size: 0.75rem;">LLM extraction verification match</p>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card-custom mb-0">
+              <div class="text-muted" style="font-size: 0.8rem;">TOTAL VOLUME PROCESSED</div>
+              <h2 class="fw-bold my-1 text-warning" id="reports-volume">0</h2>
+              <p class="text-muted mb-0" style="font-size: 0.75rem;">Pages scanned globally</p>
+            </div>
+          </div>
+          <div class="col-6 col-lg-3">
+            <div class="card-custom mb-0">
+              <div class="text-muted" style="font-size: 0.8rem;">ACTIVE ADMIN USERS</div>
+              <h2 class="fw-bold my-1" id="reports-active-users">4</h2>
+              <p class="text-muted mb-0" style="font-size: 0.75rem;">Collaborators online</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="row g-4 mb-4 mt-2">
+          <!-- Monthly bar chart -->
+          <div class="col-12 col-lg-7">
+            <div class="card-custom mb-0">
+              <h3 class="h5 fw-bold mb-3">Monthly Processing Volume</h3>
+              <div class="chart-container-custom">
+                <svg class="svg-chart" id="reports-monthly-bar-chart"></svg>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Categories donut -->
+          <div class="col-12 col-lg-5">
+            <div class="card-custom mb-0">
+              <h3 class="h5 fw-bold mb-3">Category-Wise Scans</h3>
+              <div class="row align-items-center">
+                <div class="col-12 col-sm-6 d-flex justify-content-center">
+                  <svg class="svg-chart" id="reports-category-donut" viewBox="0 0 100 100" style="width: 160px; height: 160px;"></svg>
+                </div>
+                <div class="col-12 col-sm-6">
+                  <div class="d-flex flex-column gap-2" id="reports-category-legend">
+                    <!-- Rendered via JS -->
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Heatmap + Top docs -->
+        <div class="row g-4 mt-2">
+          <div class="col-12 col-xl-6">
+            <div class="card-custom h-100 mb-0">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 fw-bold mb-1">Upload Density Matrix</h3>
+                <span class="text-muted" style="font-size: 0.75rem;">Peak Times (Mon - Sun, 24h)</span>
+              </div>
+              <div class="heatmap-grid" id="analytics-heatmap">
+                <!-- Injected via JS -->
+              </div>
+              <div class="d-flex justify-content-between mt-3 text-muted" style="font-size: 0.75rem;">
+                <span>Monday</span>
+                <span>Wednesday</span>
+                <span>Friday</span>
+                <span>Sunday</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-12 col-xl-6">
+            <div class="card-custom mb-0">
+              <h3 class="h5 fw-bold mb-3">Top Processed Documents</h3>
+              <div class="table-responsive-custom">
+                <table class="table table-custom">
+                  <thead>
+                    <tr>
+                      <th>Document Name</th>
+                      <th>Category</th>
+                      <th>Total Scans</th>
+                      <th>Status</th>
+                    </tr>
+                  </thead>
+                  <tbody id="reports-top-docs-tbody">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- App JS -->
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

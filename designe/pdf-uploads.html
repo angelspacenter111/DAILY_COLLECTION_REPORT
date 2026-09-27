@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PDF Uploads | AeroData XLS</title>
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="brand-icon">A</div>
+        <span class="brand-name">AeroData XLS</span>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <a href="dashboard.html" class="sidebar-nav-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="pdf-uploads.html" class="sidebar-nav-link">
+          <i data-lucide="file-up"></i>
+          <span>PDF Uploads</span>
+        </a>
+        <a href="processing-queue.html" class="sidebar-nav-link">
+          <i data-lucide="play-circle"></i>
+          <span>Processing Queue</span>
+        </a>
+        <a href="extracted-records.html" class="sidebar-nav-link">
+          <i data-lucide="database"></i>
+          <span>Extracted Records</span>
+        </a>
+        <a href="excel-management.html" class="sidebar-nav-link">
+          <i data-lucide="file-spreadsheet"></i>
+          <span>Excel Management</span>
+        </a>
+        <a href="reports.html" class="sidebar-nav-link">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Reports & Analytics</span>
+        </a>
+        <a href="activity-logs.html" class="sidebar-nav-link">
+          <i data-lucide="clipboard-list"></i>
+          <span>Activity Logs</span>
+        </a>
+        <a href="users.html" class="sidebar-nav-link">
+          <i data-lucide="users"></i>
+          <span>User Management</span>
+        </a>
+        <a href="settings.html" class="sidebar-nav-link">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Admin" class="avatar-img me-2">
+          <div>
+            <div class="fw-bold" style="font-size: 0.85rem;" id="user-role-display">Sarah Connor</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Super Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <main class="app-content">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="app-header">
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link d-lg-none p-0 me-3 text-main" id="mobile-toggle" aria-label="Toggle Sidebar">
+            <i data-lucide="menu"></i>
+          </button>
+          
+          <div class="header-search">
+            <div class="input-group">
+              <span class="input-group-text"><i data-lucide="search" style="width: 16px; height: 16px;"></i></span>
+              <input type="text" class="form-control" placeholder="Search invoices, files..." id="global-search-input">
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <div class="status-pill" id="processing-status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text">System Idle</span>
+          </div>
+          
+          <button class="header-btn" id="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">
+            <i data-lucide="moon" id="theme-icon"></i>
+          </button>
+          
+          <div class="dropdown">
+            <button class="header-btn dropdown-toggle no-caret" id="notif-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+              <i data-lucide="bell"></i>
+              <span class="badge-dot" id="notif-badge"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 modal-content-custom" style="width: 320px;" aria-labelledby="notif-dropdown-btn" id="notif-dropdown-list">
+              <li class="px-3 py-2 border-bottom border-color d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Notifications</span>
+                <a href="#" class="text-primary text-decoration-none" style="font-size: 0.8rem;" id="clear-notifs-btn">Clear All</a>
+              </li>
+              <div id="notif-items-container" style="max-height: 240px; overflow-y: auto;">
+                <li class="px-3 py-3 border-bottom border-color text-center text-muted" style="font-size: 0.85rem;">No new notifications</li>
+              </div>
+            </ul>
+          </div>
+          
+          <div class="dropdown">
+            <div class="avatar-wrapper dropdown-toggle" id="profile-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Sarah Connor" class="avatar-img">
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg modal-content-custom" aria-labelledby="profile-dropdown-btn">
+              <li class="px-3 py-2 border-bottom border-color">
+                <div class="fw-bold">Sarah Connor</div>
+                <div class="text-muted" style="font-size: 0.8rem;">sarah.c@aerodata.io</div>
+              </li>
+              <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="user" class="me-2" style="width: 16px;"></i> My Profile</a></li>
+              <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="settings" class="me-2" style="width: 16px;"></i> Account Settings</a></li>
+              <li><hr class="dropdown-divider border-color"></li>
+              <li><a class="dropdown-item py-2 text-danger" href="#" id="logout-btn"><i data-lucide="log-out" class="me-2" style="width: 16px;"></i> Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <section class="page-container" id="uploads-view-wrapper">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 fw-bold mb-1">PDF Upload Module</h1>
+            <p class="text-muted mb-0">Select multiple PDF files, specify their metadata, and extract table data immediately.</p>
+          </div>
+        </div>
+
+        <div class="row g-4">
+          <!-- Left side upload form -->
+          <div class="col-12 col-lg-5">
+            <div class="card-custom">
+              <h3 class="h5 fw-bold mb-3">Document Properties</h3>
+              
+              <form id="pdf-upload-form">
+                <div class="mb-3">
+                  <label for="upload-doc-name" class="form-label fw-semibold" style="font-size: 0.85rem;">Batch Name / Alias</label>
+                  <input type="text" class="form-control form-control-custom" id="upload-doc-name" placeholder="Optional batch name override">
+                </div>
+                
+                <div class="mb-3">
+                  <label for="upload-category" class="form-label fw-semibold" style="font-size: 0.85rem;">Document Category</label>
+                  <select class="form-select form-select-custom" id="upload-category" required>
+                    <option value="" disabled selected>Select category...</option>
+                    <option value="Invoice">Invoice</option>
+                    <option value="Receipt">Receipt</option>
+                    <option value="Report">Report</option>
+                    <option value="Bank Statement">Bank Statement</option>
+                    <option value="Contract">Contract</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                
+                <div class="mb-3">
+                  <label class="form-label fw-semibold" style="font-size: 0.85rem;">Multiple File Selection</label>
+                  <div class="upload-drag-zone" id="drag-drop-zone">
+                    <div class="upload-icon">
+                      <i data-lucide="cloud-upload"></i>
+                    </div>
+                    <h4 class="h6 fw-bold">Drag and drop PDF files here</h4>
+                    <p class="text-muted mb-3" style="font-size: 0.75rem;">Supports multiple PDFs up to 25MB each</p>
+                    <button type="button" class="btn btn-outline-primary btn-sm px-3" onclick="document.getElementById('file-input-selector').click();">Browse Files</button>
+                    <input type="file" id="file-input-selector" class="d-none" multiple accept=".pdf">
+                  </div>
+                </div>
+                
+                <div class="mb-3">
+                  <label for="upload-tags" class="form-label fw-semibold" style="font-size: 0.85rem;">Tags (comma-separated)</label>
+                  <input type="text" class="form-control form-control-custom" id="upload-tags" placeholder="e.g. Q3-Invoices, Finance, VendorA">
+                </div>
+                
+                <div class="mb-4">
+                  <label for="upload-notes" class="form-label fw-semibold" style="font-size: 0.85rem;">Extraction Instructions / Notes</label>
+                  <textarea class="form-control form-control-custom" id="upload-notes" rows="3" placeholder="Additional prompt instructions for OCR..."></textarea>
+                </div>
+                
+                <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="start-upload-btn">
+                  <i data-lucide="play" class="me-1" style="width: 16px;"></i> Import & Extract Data
+                </button>
+              </form>
+            </div>
+          </div>
+          
+          <!-- Right side registry -->
+          <div class="col-12 col-lg-7">
+            <!-- Active Uploads progress bar card (shown during uploading) -->
+            <div class="card-custom d-none" id="active-uploads-progress-card">
+              <h3 class="h5 fw-bold mb-3">Active Upload Progress</h3>
+              <div id="active-uploads-progress-container" class="d-flex flex-column gap-3">
+                <!-- Injected via JS -->
+              </div>
+            </div>
+            
+            <div class="card-custom h-100">
+              <div class="d-flex justify-content-between align-items-center mb-3">
+                <h3 class="h5 fw-bold mb-0">System PDF Registry</h3>
+                <div class="d-flex gap-2">
+                  <select class="form-select form-select-custom form-select-sm" style="width: auto;" id="table-filter-category">
+                    <option value="All">All Categories</option>
+                    <option value="Invoice">Invoices</option>
+                    <option value="Receipt">Receipts</option>
+                    <option value="Report">Reports</option>
+                    <option value="Bank Statement">Bank Statements</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="table-responsive-custom">
+                <table class="table table-custom">
+                  <thead>
+                    <tr>
+                      <th>File Name</th>
+                      <th>Category</th>
+                      <th>Uploaded</th>
+                      <th>Status</th>
+                      <th>Records</th>
+                      <th>Time</th>
+                      <th>Actions</th>
+                    </tr>
+                  </thead>
+                  <tbody id="pdf-registry-tbody">
+                    <!-- Rendered via JS -->
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- App JS -->
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

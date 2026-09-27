@@ -1,0 +1,46 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environments
+venv/
+.venv/
+env/
+ENV/
+
+# Environment variables & secrets
+.env
+.env.*
+!.env.example
+
+# Temporary & test files
+scratch/
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Uploaded & generated files
+*.pdf
+*.xlsx
+uploadpdf/
+uploads/
+
+# Database files (local sqlite)
+*.db
+*.sqlite3
+
+# Logs
+*.log
+
+# Editor / IDE folders
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini

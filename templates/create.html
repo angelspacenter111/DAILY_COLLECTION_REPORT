@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>PDF Uploads | AeroData XLS</title>
+        {% include "includes/css.html" %}
+    </head>
+    <body>
+        <div class="app-container">
+            {% include "includes/sidebar.html" %}
+            <main class="app-content">
+                {% include "includes/header.html" %}
+                <section class="page-container" id="uploads-view-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">DCR Upload Process</h1>
+                            <p class="text-muted mb-0">Select multiple PDF files, specify their metadata, and extract table data immediately.</p>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-md-12">
+                            <div class="card-custom">
+                                <h3 class="h5 fw-bold mb-3">Multiple File Selection</h3>
+                                <form action="/createprocess" method="POST" enctype="multipart/form-data">
+                                    <div class="mb-3">
+                                        <div class="upload-drag-zone" id="drag-drop-zone">
+                                            <input type="file"
+                                                id="file-input-selector"
+                                                class="d-none"
+                                                multiple
+                                                name="pdfpostfiles"
+                                                accept=".pdf">
+                                            <div class="upload-icon">
+                                                <i data-lucide="cloud-upload"></i>
+                                            </div>
+                                            <h4 class="h6 fw-bold">Please click the "Browse Files" button to select one or more PDF files.</h4>
+                                            <button type="button" class="btn btn-outline-primary btn-sm px-3" onclick="document.getElementById('file-input-selector').click();">Browse Files</button>
+                                            <!-- <input type="file" id="file-input-selector" class="d-none" multiple accept=".pdf"> -->
+                                        </div>
+                                        <div id="selected-files" class="mt-3"></div>
+                                    </div>
+                                    
+                                    <button type="submit" class="btn btn-primary w-100 py-2 fw-semibold" id="start-upload-btn">
+                                        <i data-lucide="play" class="me-1" style="width: 16px;"></i> Import & Extract Data
+                                    </button>
+                                </form>
+                            </div>
+                        </div>  
+                    </div>
+                </section>
+            </main>
+        </div>
+        {% include "includes/js.html" %}
+        <script>
+            const fileInput = document.getElementById("file-input-selector");
+            const fileList = document.getElementById("selected-files");
+
+            function displayFiles(files) {
+
+                fileList.innerHTML = "";
+
+                [...files].forEach((file, index) => {
+
+                    fileList.innerHTML += `
+                        <div class="alert alert-light border d-flex justify-content-between align-items-center mb-2">
+                            <div>
+                                <strong>${index + 1}.</strong>
+                                ${file.name}
+                                <br>
+                                <small>${(file.size / 1024 / 1024).toFixed(2)} MB</small>
+                            </div>
+                        </div>
+                    `;
+                });
+            }
+
+            fileInput.addEventListener("change", function () {
+                displayFiles(this.files);
+            });
+        </script>
+    </body>
+</html>

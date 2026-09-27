@@ -1,0 +1,118 @@
+{% set days = ['fri','sat','sun','mon','tue','wed','thu'] %}
+<!doctype html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Extracted Records | AeroData XLS</title>
+        {% include "includes/css.html" %}
+    </head>
+    <body>
+        <div class="app-container">
+            {% include "includes/sidebar.html" %}
+
+            <main class="app-content">
+                {% include "includes/header.html" %}
+
+                <section class="page-container" id="records-view-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">Extracted Records</h1>
+                            <p class="text-muted mb-0">
+                                Review, query, filter, and edit data fields extracted from files.
+                            </p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <button class="btn btn-outline-secondary" id="bulk-delete-records-btn">Bulk Delete</button>
+                            <a href="/downloadcdrexcel" class="btn btn-success"><i data-lucide="download" class="me-1"></i> Export Data</a>
+                        </div>
+                    </div>
+
+
+                    <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px;">
+                        <table class="table table-bordered table-sm mb-0 font-monospace text-center" style="font-size: 0.8rem; background-color: var(--bg-card); color: var(--text-main);">
+                            <thead>
+                                <tr>
+                                    <th></th>
+                                    <th></th>
+                                    <th colspan="3">FRIDAY</th>
+                                    <th colspan="3">SATURDAY</th>
+                                    <th colspan="3">SUNDAY</th>
+                                    <th colspan="3">MONDAY</th>
+                                    <th colspan="3">TUESDAY</th>
+                                    <th colspan="3">WEDNESDAY</th>
+                                    <th colspan="3">THURSDAY</th>
+                                    <th colspan="3">GRAND TOTAL NET</th>
+                                </tr>
+
+                                <tr>
+                                    <th>FILE NAME</th>
+                                    <th>CINEMA NAME</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                    <th>SHOW</th>
+                                    <th>ADMITS</th>
+                                    <th>NET</th>
+                                </tr>
+                            </thead>
+                            <tbody id="records-tbody">
+
+                                {% for row in reports %}
+                                <tr>
+
+                                    <td>{{ row["file_name"] }}</td>
+                                    <td>{{ row["cinema_name"] }}</td>
+
+                                    {% for day in days %}
+                                        <td>{{ row[day ~ "_show"] }}</td>
+                                        <td>{{ row[day ~ "_admits"] }}</td>
+                                        <td>{{ row[day ~ "_net"] }}</td>
+                                    {% endfor %}
+
+                                    <td></td>
+                                    <td></td>
+                                    <td><b>{{ row["grand_total"] }}</b></td>
+
+                                </tr>
+                                {% endfor %}
+
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="d-flex justify-content-between align-items-center">
+                        <div class="text-muted" style="font-size: 0.85rem" id="records-pagination-info">
+                            Showing 0 to 0 of 0 records
+                        </div>
+                        <nav aria-label="Records pagination">
+                            <ul class="pagination pagination-sm mb-0" id="records-pagination-list"></ul>
+                        </nav>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+
+       
+        {% include "includes/js.html" %}
+    </body>
+</html>

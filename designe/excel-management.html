@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Excel Management | AeroData XLS</title>
+  <!-- Bootstrap 5 CSS CDN -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Custom Styles -->
+  <link href="assets/css/style.css" rel="stylesheet">
+</head>
+<body>
+
+  <div class="app-container">
+    
+    <!-- LEFT SIDEBAR -->
+    <aside class="app-sidebar" id="sidebar">
+      <div class="sidebar-logo">
+        <div class="brand-icon">A</div>
+        <span class="brand-name">AeroData XLS</span>
+      </div>
+      
+      <nav class="sidebar-menu">
+        <a href="dashboard.html" class="sidebar-nav-link">
+          <i data-lucide="layout-dashboard"></i>
+          <span>Dashboard</span>
+        </a>
+        <a href="pdf-uploads.html" class="sidebar-nav-link">
+          <i data-lucide="file-up"></i>
+          <span>PDF Uploads</span>
+        </a>
+        <a href="processing-queue.html" class="sidebar-nav-link">
+          <i data-lucide="play-circle"></i>
+          <span>Processing Queue</span>
+        </a>
+        <a href="extracted-records.html" class="sidebar-nav-link">
+          <i data-lucide="database"></i>
+          <span>Extracted Records</span>
+        </a>
+        <a href="excel-management.html" class="sidebar-nav-link">
+          <i data-lucide="file-spreadsheet"></i>
+          <span>Excel Management</span>
+        </a>
+        <a href="reports.html" class="sidebar-nav-link">
+          <i data-lucide="bar-chart-3"></i>
+          <span>Reports & Analytics</span>
+        </a>
+        <a href="activity-logs.html" class="sidebar-nav-link">
+          <i data-lucide="clipboard-list"></i>
+          <span>Activity Logs</span>
+        </a>
+        <a href="users.html" class="sidebar-nav-link">
+          <i data-lucide="users"></i>
+          <span>User Management</span>
+        </a>
+        <a href="settings.html" class="sidebar-nav-link">
+          <i data-lucide="settings"></i>
+          <span>Settings</span>
+        </a>
+      </nav>
+      
+      <div class="sidebar-footer">
+        <div class="d-flex align-items-center">
+          <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Admin" class="avatar-img me-2">
+          <div>
+            <div class="fw-bold" style="font-size: 0.85rem;" id="user-role-display">Sarah Connor</div>
+            <div class="text-muted" style="font-size: 0.75rem;">Super Admin</div>
+          </div>
+        </div>
+      </div>
+    </aside>
+
+    <!-- MAIN WRAPPER -->
+    <main class="app-content">
+      
+      <!-- TOP NAVIGATION BAR -->
+      <header class="app-header">
+        <div class="d-flex align-items-center">
+          <button class="btn btn-link d-lg-none p-0 me-3 text-main" id="mobile-toggle" aria-label="Toggle Sidebar">
+            <i data-lucide="menu"></i>
+          </button>
+          
+          <div class="header-search">
+            <div class="input-group">
+              <span class="input-group-text"><i data-lucide="search" style="width: 16px; height: 16px;"></i></span>
+              <input type="text" class="form-control" placeholder="Search invoices, files..." id="global-search-input">
+            </div>
+          </div>
+        </div>
+        
+        <div class="header-actions">
+          <div class="status-pill" id="processing-status-indicator">
+            <span class="status-dot"></span>
+            <span class="status-text">System Idle</span>
+          </div>
+          
+          <button class="header-btn" id="theme-toggle" title="Toggle Theme" aria-label="Toggle Dark Mode">
+            <i data-lucide="moon" id="theme-icon"></i>
+          </button>
+          
+          <div class="dropdown">
+            <button class="header-btn dropdown-toggle no-caret" id="notif-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" aria-label="Notifications">
+              <i data-lucide="bell"></i>
+              <span class="badge-dot" id="notif-badge"></span>
+            </button>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg py-2 modal-content-custom" style="width: 320px;" aria-labelledby="notif-dropdown-btn" id="notif-dropdown-list">
+              <li class="px-3 py-2 border-bottom border-color d-flex justify-content-between align-items-center">
+                <span class="fw-bold">Notifications</span>
+                <a href="#" class="text-primary text-decoration-none" style="font-size: 0.8rem;" id="clear-notifs-btn">Clear All</a>
+              </li>
+              <div id="notif-items-container" style="max-height: 240px; overflow-y: auto;">
+                <li class="px-3 py-3 border-bottom border-color text-center text-muted" style="font-size: 0.85rem;">No new notifications</li>
+              </div>
+            </ul>
+          </div>
+          
+          <div class="dropdown">
+            <div class="avatar-wrapper dropdown-toggle" id="profile-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
+              <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Sarah Connor" class="avatar-img">
+            </div>
+            <ul class="dropdown-menu dropdown-menu-end shadow-lg modal-content-custom" aria-labelledby="profile-dropdown-btn">
+              <li class="px-3 py-2 border-bottom border-color">
+                <div class="fw-bold">Sarah Connor</div>
+                <div class="text-muted" style="font-size: 0.8rem;">sarah.c@aerodata.io</div>
+              </li>
+              <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="user" class="me-2" style="width: 16px;"></i> My Profile</a></li>
+              <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="settings" class="me-2" style="width: 16px;"></i> Account Settings</a></li>
+              <li><hr class="dropdown-divider border-color"></li>
+              <li><a class="dropdown-item py-2 text-danger" href="#" id="logout-btn"><i data-lucide="log-out" class="me-2" style="width: 16px;"></i> Sign Out</a></li>
+            </ul>
+          </div>
+        </div>
+      </header>
+
+      <!-- PAGE CONTENT -->
+      <section class="page-container" id="excel-view-wrapper">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+          <div>
+            <h1 class="h3 fw-bold mb-1">Excel Management</h1>
+            <p class="text-muted mb-0">Control compilation properties, sheets, and download the compiled master file.</p>
+          </div>
+          <div class="d-flex gap-2">
+            <button class="btn btn-outline-secondary" id="excel-schedule-export-btn">
+              <i data-lucide="calendar" class="me-1"></i> Schedule Export
+            </button>
+            <button class="btn btn-success" id="excel-master-download-btn">
+              <i data-lucide="file-spreadsheet" class="me-1"></i> Download Master Excel (.xlsx)
+            </button>
+          </div>
+        </div>
+
+        <!-- CURRENT FILE STATISTICS -->
+        <div class="row g-4 mb-4">
+          <div class="col-12 col-lg-8">
+            <div class="card-custom h-100 d-flex flex-column justify-content-between mb-0">
+              <div>
+                <div class="d-flex justify-content-between align-items-start mb-3">
+                  <div>
+                    <span class="badge bg-success text-white mb-2">Master Active Dataset</span>
+                    <h3 class="h4 fw-bold mb-1" id="excel-filename-display">master_invoice_dataset_2026.xlsx</h3>
+                    <p class="text-muted mb-0" style="font-size: 0.85rem;">This spreadsheet compiles all validated document rows dynamically.</p>
+                  </div>
+                  <div class="text-end text-muted" style="font-size: 0.85rem;">
+                    <div>Last Sync: <span id="excel-last-sync" class="fw-semibold">Just Now</span></div>
+                  </div>
+                </div>
+                
+                <div class="row g-3 my-2 border-top border-color pt-3">
+                  <div class="col-6 col-sm-3">
+                    <div class="text-muted" style="font-size: 0.75rem;">TOTAL COMPILED ROWS</div>
+                    <div class="fs-4 fw-bold" id="excel-stat-rows">0</div>
+                  </div>
+                  <div class="col-6 col-sm-3">
+                    <div class="text-muted" style="font-size: 0.75rem;">SHEETS IN WORKBOOK</div>
+                    <div class="fs-4 fw-bold" id="excel-stat-sheets">3</div>
+                  </div>
+                  <div class="col-6 col-sm-3">
+                    <div class="text-muted" style="font-size: 0.75rem;">ESTIMATED FILE SIZE</div>
+                    <div class="fs-4 fw-bold" id="excel-stat-size">142 KB</div>
+                  </div>
+                  <div class="col-6 col-sm-3">
+                    <div class="text-muted" style="font-size: 0.75rem;">CONNECTED SOURCES</div>
+                    <div class="fs-4 fw-bold" id="excel-stat-sources">0 PDFs</div>
+                  </div>
+                </div>
+              </div>
+              
+              <div class="d-flex gap-2 mt-3">
+                <button class="btn btn-outline-primary btn-sm" id="excel-create-new-btn"><i data-lucide="plus-circle" class="me-1"></i> Reset & Clear Master</button>
+                <button class="btn btn-outline-secondary btn-sm" id="excel-merge-btn"><i data-lucide="combine" class="me-1"></i> Merge with Custom Sheet</button>
+                <button class="btn btn-outline-secondary btn-sm" id="excel-filter-export-btn" onclick="window.location.href='extracted-records.html';"><i data-lucide="filter" class="me-1"></i> Export Filtered Only</button>
+              </div>
+            </div>
+          </div>
+          
+          <div class="col-12 col-lg-4">
+            <div class="card-custom h-100 mb-0">
+              <h3 class="h5 fw-bold mb-3">Auto-Synchronization Rules</h3>
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="sync-auto" checked>
+                <label class="form-check-label fw-semibold" for="sync-auto" style="font-size: 0.85rem;">Auto-append completed files</label>
+                <div class="text-muted" style="font-size: 0.75rem;">Instantly adds rows as soon as processing status changes to Completed.</div>
+              </div>
+              <div class="form-check form-switch mb-3">
+                <input class="form-check-input" type="checkbox" role="switch" id="sync-validation" checked>
+                <label class="form-check-label fw-semibold" for="sync-validation" style="font-size: 0.85rem;">Require Admin Validation</label>
+                <div class="text-muted" style="font-size: 0.75rem;">Requires records to be explicitly marked "Valid" before spreadsheet integration.</div>
+              </div>
+              <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" role="switch" id="sync-backups">
+                <label class="form-check-label fw-semibold" for="sync-backups" style="font-size: 0.85rem;">Generate backup sheets</label>
+                <div class="text-muted" style="font-size: 0.75rem;">Saves separate sheets for Invoices, Receipts, and Logs.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- EXCEL SHEET PREVIEW -->
+        <div class="card-custom mb-0 mt-4">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <div>
+              <h3 class="h5 fw-bold mb-1">Spreadsheet Preview Grid</h3>
+              <p class="text-muted mb-0" style="font-size: 0.85rem;">Displaying first 12 records. Changes made here sync to export downloads.</p>
+            </div>
+            <div class="btn-group btn-group-sm">
+              <button class="btn btn-outline-secondary active">Sheet 1: Master</button>
+              <button class="btn btn-outline-secondary">Sheet 2: Invoices</button>
+              <button class="btn btn-outline-secondary">Sheet 3: Metadata</button>
+            </div>
+          </div>
+          
+          <div class="table-responsive" style="border: 1px solid var(--border-color); border-radius: 8px;">
+            <table class="table table-bordered table-sm mb-0 font-monospace" style="font-size: 0.8rem; background-color: var(--bg-card); color: var(--text-main);">
+              <thead class="bg-light text-muted">
+                <tr>
+                  <th class="px-2 py-1 text-center" style="width: 40px; background-color: var(--bg-app);"></th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">A (ID)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">B (Source File)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">C (Invoice Ref)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">D (Customer Profile)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">E (Billing Date)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">F (Subtotal Amt)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">G (Taxes Paid)</th>
+                  <th class="px-2 py-1" style="background-color: var(--bg-app);">H (Validation Status)</th>
+                </tr>
+              </thead>
+              <tbody id="excel-preview-tbody">
+                <!-- Javascript will inject preview cells -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+
+  <!-- Bootstrap 5 Bundle JS CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <!-- Lucide Icons CDN -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <!-- App JS -->
+  <script src="assets/js/app.js" defer></script>
+</body>
+</html>

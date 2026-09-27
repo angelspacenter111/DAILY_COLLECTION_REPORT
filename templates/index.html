@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dashboard | AeroData XLS</title>
+        {% include "includes/css.html" %}
+    </head>
+    <body>
+        <div class="app-container">
+            {% include "includes/sidebar.html" %}
+            <main class="app-content">
+                {% include "includes/header.html" %}
+                <section class="page-container" id="dashboard-view-wrapper">
+                    <div class="d-flex justify-content-between align-items-center mb-4">
+                        <div>
+                            <h1 class="h3 fw-bold mb-1">Dashboard</h1>
+                            <p class="text-muted mb-0">Monitor uploads, extraction counts, and target dataset metrics.</p>
+                        </div>
+                        <a href="pdf-uploads.html" class="btn btn-primary">
+                        <i data-lucide="plus" class="me-1"></i> Upload New PDFs
+                        </a>
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-sm-6 col-xxl-2">
+                            <div class="card-custom card-kpi">
+                                <div class="kpi-icon"><i data-lucide="files"></i></div>
+                                <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Uploaded</div>
+                                <h2 class="fw-bold my-2" id="kpi-total-uploads">0</h2>
+                                <div class="kpi-trend up"><i data-lucide="trending-up"></i> +12% this week</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xxl-2">
+                            <div class="card-custom card-kpi">
+                                <div class="kpi-icon" style="background-color: var(--success-light); color: var(--success-color);"><i data-lucide="check-circle-2"></i></div>
+                                <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Processed</div>
+                                <h2 class="fw-bold my-2" id="kpi-processed">0</h2>
+                                <div class="kpi-trend up"><i data-lucide="trending-up"></i> 94% rate</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xxl-2">
+                            <div class="card-custom card-kpi">
+                                <div class="kpi-icon" style="background-color: var(--warning-light); color: var(--warning-color);"><i data-lucide="loader"></i></div>
+                                <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Pending Queue</div>
+                                <h2 class="fw-bold my-2" id="kpi-pending">0</h2>
+                                <div class="kpi-trend neutral"><i data-lucide="minus"></i> Dynamic</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xxl-2">
+                            <div class="card-custom card-kpi">
+                                <div class="kpi-icon" style="background-color: var(--error-light); color: var(--error-color);"><i data-lucide="alert-octagon"></i></div>
+                                <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Failed Files</div>
+                                <h2 class="fw-bold my-2" id="kpi-failed">0</h2>
+                                <div class="kpi-trend down"><i data-lucide="trending-down"></i> -2% drop</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xxl-2">
+                            <div class="card-custom card-kpi">
+                                <div class="kpi-icon" style="background-color: var(--primary-light); color: var(--primary-color);"><i data-lucide="database"></i></div>
+                                <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Total Records</div>
+                                <h2 class="fw-bold my-2" id="kpi-records">0</h2>
+                                <div class="kpi-trend up"><i data-lucide="trending-up"></i> +8.2k raw</div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-sm-6 col-xxl-2">
+                            <div class="card-custom card-kpi">
+                                <div class="kpi-icon" style="background-color: var(--success-light); color: var(--success-color);"><i data-lucide="file-spreadsheet"></i></div>
+                                <div class="text-muted text-uppercase fw-semibold" style="font-size: 0.75rem;">Excel Rows</div>
+                                <h2 class="fw-bold my-2" id="kpi-excel-rows">0</h2>
+                                <div class="kpi-trend up"><i data-lucide="trending-up"></i> Updated 1m ago</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4 mb-4">
+                        <div class="col-12 col-xl-8">
+                            <div class="card-custom h-100">
+                                <div class="d-flex justify-content-between align-items-center mb-4">
+                                    <div>
+                                        <h3 class="h5 fw-bold mb-1">Data Upload & Processing Activity</h3>
+                                        <p class="text-muted mb-0" style="font-size: 0.85rem;">Volume of PDFs received and successfully compiled into spreadsheet rows.</p>
+                                    </div>
+                                    <div class="btn-group btn-group-sm border-color">
+                                        <button class="btn btn-outline-secondary active" id="chart-week-btn">Week</button>
+                                        <button class="btn btn-outline-secondary" id="chart-month-btn">Month</button>
+                                    </div>
+                                </div>
+                                <div class="chart-container-custom">
+                                    <svg class="svg-chart" id="dashboard-activity-chart"></svg>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-xl-4">
+                            <div class="card-custom h-100">
+                                <div class="mb-4">
+                                    <h3 class="h5 fw-bold mb-1">Extraction Metrics</h3>
+                                    <p class="text-muted mb-0" style="font-size: 0.85rem;">Processing Success Rate & Category distribution.</p>
+                                </div>
+                                <div class="d-flex flex-column justify-content-between h-75">
+                                    <div class="d-flex align-items-center justify-content-center py-2" style="position: relative; height: 160px;">
+                                        <svg class="svg-chart" id="success-rate-donut" viewBox="0 0 100 100" style="width: 140px; height: 140px;"></svg>
+                                        <div style="position: absolute; text-align: center;">
+                                            <div class="fw-bold h4 mb-0" id="success-rate-pct">97.8%</div>
+                                            <div class="text-muted" style="font-size: 0.75rem;">Success Rate</div>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                            <span>Invoices & Receipts</span>
+                                            <span class="fw-bold" id="cat-invoice-pct">74%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 6px;">
+                                            <div class="progress-bar bg-primary" role="progressbar" style="width: 74%" aria-valuenow="74" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                            <span>Bank Statements</span>
+                                            <span class="fw-bold" id="cat-statements-pct">16%</span>
+                                        </div>
+                                        <div class="progress mb-2" style="height: 6px;">
+                                            <div class="progress-bar bg-success" role="progressbar" style="width: 16%" aria-valuenow="16" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                        <div class="d-flex justify-content-between mb-1" style="font-size: 0.8rem;">
+                                            <span>Reports & Contracts</span>
+                                            <span class="fw-bold" id="cat-reports-pct">10%</span>
+                                        </div>
+                                        <div class="progress" style="height: 6px;">
+                                            <div class="progress-bar bg-warning" role="progressbar" style="width: 10%" aria-valuenow="10" aria-valuemin="0" aria-valuemax="100"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="row g-4">
+                        <div class="col-12 col-xl-7">
+                            <div class="card-custom mb-0">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h5 fw-bold mb-0">Recent Uploads</h3>
+                                    <a href="pdf-uploads.html" class="btn btn-link btn-sm text-primary text-decoration-none">View All Uploads</a>
+                                </div>
+                                <div class="table-responsive-custom">
+                                    <table class="table table-custom">
+                                        <thead>
+                                            <tr>
+                                                <th>File Name</th>
+                                                <th>Category</th>
+                                                <th>Upload Date</th>
+                                                <th>Status</th>
+                                                <th>Records</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="dashboard-recent-uploads-tbody">
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12 col-xl-5">
+                            <div class="card-custom mb-0">
+                                <div class="d-flex justify-content-between align-items-center mb-3">
+                                    <h3 class="h5 fw-bold mb-0">Recent Activities</h3>
+                                    <a href="activity-logs.html" class="btn btn-link btn-sm text-primary text-decoration-none">View Audit Log</a>
+                                </div>
+                                <div class="d-flex flex-column gap-3" id="dashboard-recent-activities-container">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </section>
+            </main>
+        </div>
+        {% include "includes/js.html" %}
+    </body>
+</html>
