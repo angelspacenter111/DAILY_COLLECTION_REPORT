@@ -5,6 +5,8 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from helpers.database_helper import init_db_indexes
+from config import ENABLE_EMAIL_LISTENER
+from services.email_listener import run_email_listener_loop
 
 import asyncio
 import logging
@@ -17,7 +19,21 @@ async def lifespan(app: FastAPI):
         await asyncio.wait_for(init_db_indexes(), timeout=4.0)
     except Exception as e:
         logger.warning("Startup index initialization notice: %s", str(e))
+
+    email_task = None
+    if ENABLE_EMAIL_LISTENER:
+        logger.info("Initializing automated email listener background service...")
+        email_task = asyncio.create_task(run_email_listener_loop())
+
     yield
+
+    if email_task and not email_task.done():
+        logger.info("Shutting down email listener background service...")
+        email_task.cancel()
+        try:
+            await email_task
+        except asyncio.CancelledError:
+            pass
 
 app = FastAPI(lifespan=lifespan)
 

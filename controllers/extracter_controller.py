@@ -250,3 +250,18 @@ async def downloadExcel(request: Request):
             "Content-Disposition":"attachment; filename=DCR_Report.xlsx"
         }
     )
+
+async def sync_emails_action(request: Request):
+    """API endpoint to manually trigger email sync and return status to frontend."""
+    from services.email_listener import check_emails_and_process
+    try:
+        result = await check_emails_and_process()
+        return JSONResponse(result)
+    except Exception as e:
+        return JSONResponse({
+            "status": False,
+            "success_count": 0,
+            "unread_count": 0,
+            "pdf_count": 0,
+            "message": f"Server error while syncing emails: {str(e)}"
+        }, status_code=500)

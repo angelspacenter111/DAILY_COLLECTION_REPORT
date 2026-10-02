@@ -7,6 +7,7 @@ from controllers.extracter_controller import (
     downloadExcel,
     delete_record,
     clear_all_records,
+    sync_emails_action,
 )
 
 router = APIRouter()
@@ -18,4 +19,6 @@ router.get("/dcrextracter")(extracterindex)
 router.get("/downloadcdrexcel")(downloadExcel)
 router.post("/api/records/delete/{record_id}")(delete_record)
 router.post("/api/records/clear-all")(clear_all_records)
+router.post("/api/emails/sync")(sync_emails_action)
+
 

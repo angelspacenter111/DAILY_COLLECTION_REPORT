@@ -17,6 +17,12 @@
                             <h1 class="h3 fw-bold mb-1">DCR Upload Process</h1>
                             <p class="text-muted mb-0">Select multiple PDF files, specify their metadata, and extract table data immediately.</p>
                         </div>
+                        <div>
+                            <button type="button" class="btn btn-outline-primary d-inline-flex align-items-center gap-1 shadow-sm" id="btn-sync-emails-create" onclick="syncEmailsNow()">
+                                <i data-lucide="mail-check" style="width: 16px; height: 16px;"></i>
+                                <span id="sync-btn-text">Sync Unread Emails</span>
+                            </button>
+                        </div>
                     </div>
                     <div class="row g-4">
                         <div class="col-md-12">
@@ -96,6 +102,37 @@
                     Extracting DCR tables & saving to MongoDB... Please wait...
                 `;
             });
+
+            async function syncEmailsNow() {
+                const btn = document.getElementById('btn-sync-emails-create');
+                const textSpan = document.getElementById('sync-btn-text');
+                const originalHtml = textSpan.innerHTML;
+
+                btn.disabled = true;
+                textSpan.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="width: 12px; height: 12px;"></span> Checking Gmail...';
+
+                try {
+                    const resp = await fetch('/api/emails/sync', { method: 'POST' });
+                    const result = await resp.json();
+
+                    if (result.status) {
+                        if (result.success_count > 0) {
+                            alert(`✅ ${result.message}`);
+                            window.location.href = '/dcrextracter';
+                        } else {
+                            alert(`ℹ️ ${result.message}`);
+                        }
+                    } else {
+                        alert(`⚠️ ${result.message}`);
+                    }
+                } catch (err) {
+                    alert('Network error while syncing emails: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    textSpan.innerHTML = originalHtml;
+                    if (window.lucide) lucide.createIcons();
+                }
+            }
         </script>
     </body>
 </html>

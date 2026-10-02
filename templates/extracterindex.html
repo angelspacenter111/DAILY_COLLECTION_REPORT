@@ -259,6 +259,10 @@
                             </p>
                         </div>
                         <div class="d-flex gap-2">
+                            <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" id="btn-sync-emails" onclick="syncEmailsNow()">
+                                <i data-lucide="mail-check" style="width: 15px; height: 15px;"></i>
+                                <span id="sync-btn-text">Sync Emails</span>
+                            </button>
                             <a href="/create" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
                                 <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Upload PDFs
                             </a>
@@ -816,6 +820,37 @@
                     }
                 } catch (e) {
                     alert('Network error while clearing records.');
+                }
+            }
+
+            async function syncEmailsNow() {
+                const btn = document.getElementById('btn-sync-emails');
+                const textSpan = document.getElementById('sync-btn-text');
+                const originalHtml = textSpan.innerHTML;
+
+                btn.disabled = true;
+                textSpan.innerHTML = '<span class="spinner-border spinner-border-sm me-1" role="status" aria-hidden="true" style="width: 12px; height: 12px;"></span> Checking Gmail...';
+
+                try {
+                    const resp = await fetch('/api/emails/sync', { method: 'POST' });
+                    const result = await resp.json();
+
+                    if (result.status) {
+                        if (result.success_count > 0) {
+                            alert(`✅ ${result.message}`);
+                            window.location.reload();
+                        } else {
+                            alert(`ℹ️ ${result.message}`);
+                        }
+                    } else {
+                        alert(`⚠️ ${result.message}`);
+                    }
+                } catch (err) {
+                    alert('Network error while syncing emails: ' + err.message);
+                } finally {
+                    btn.disabled = false;
+                    textSpan.innerHTML = originalHtml;
+                    if (window.lucide) lucide.createIcons();
                 }
             }
         </script>
