@@ -58,6 +58,7 @@ async def insert_dcr_report(report_payload: Dict[str, Any]) -> str:
         "cinema_name": report_payload.get("cinema_name", ""),
         "distributor_address": report_payload.get("distributor_address", ""),
         "report_date": report_payload.get("report_date", 0),
+        "total_deduction": float(report_payload.get("total_deduction", 0.0) or 0.0),
         "created_at": datetime.utcnow(),
         "report_data": report_payload.get("report_data", []),
         "details": details,
@@ -96,6 +97,8 @@ async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[s
                     doc["net_show"] = sum(int(doc.get(f"{p}_show", 0) or 0) for p in day_prefixes)
                 if "net_adm" not in doc:
                     doc["net_adm"] = sum(int(doc.get(f"{p}_admits", 0) or 0) for p in day_prefixes)
+
+                doc["total_deduction"] = float(doc.get("total_deduction", 0.0) or 0.0)
 
                 reports.append(doc)
             return reports

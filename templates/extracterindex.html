@@ -376,7 +376,7 @@
                                         {% for code, name, color in day_configs %}
                                             <th colspan="3" class="day-group-{{ code }}">{{ name|upper }}</th>
                                         {% endfor %}
-                                        <th colspan="3" class="day-group-total">TOTAL</th>
+                                        <th colspan="4" class="day-group-total">TOTAL</th>
                                         <th rowspan="2" style="min-width: 75px;">ACTIONS</th>
                                     </tr>
 
@@ -390,12 +390,13 @@
                                         <th style="min-width: 48px;" title="Total Shows (Net Shows)">SH.</th>
                                         <th style="min-width: 62px;" title="Total Admits (Net Admits)">ADM.</th>
                                         <th style="min-width: 95px;" title="Grand Total Net">NET (₹)</th>
+                                        <th style="min-width: 95px;" title="Total Deduction">TOTAL DED.</th>
                                     </tr>
                                 </thead>
                                 <tbody id="dcr-records-tbody">
                                     {% if reports and reports|length > 0 %}
                                         {% for row in reports %}
-                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-cinema="{{ row['cinema_name'] }}" data-file="{{ row['file_name'] }}">
+                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-deduction="{{ row['total_deduction']|default(0.0) }}" data-cinema="{{ row['cinema_name'] }}" data-file="{{ row['file_name'] }}">
                                             <!-- File Name (Sticky Col 1) -->
                                             <td class="sticky-col-file text-start fw-medium text-truncate" title="{{ row['file_name'] }}">
                                                 <div class="d-flex align-items-center gap-1">
@@ -480,6 +481,16 @@
                                                 {% endif %}
                                             </td>
 
+                                            <!-- TOTAL: Total Deduction -->
+                                            {% set tot_ded = row["total_deduction"]|default(0.0)|float %}
+                                            <td>
+                                                {% if tot_ded > 0 %}
+                                                    <span class="cell-net" style="color: #dc2626;">₹ {{ "{:,.2f}".format(tot_ded) }}</span>
+                                                {% else %}
+                                                    <span class="cell-zero">₹ 0.00</span>
+                                                {% endif %}
+                                            </td>
+
                                             <!-- Row Actions -->
                                             <td>
                                                 <div class="d-flex align-items-center justify-content-center gap-1">
@@ -495,7 +506,7 @@
                                         {% endfor %}
                                     {% else %}
                                         <tr id="dcr-empty-row">
-                                            <td colspan="28" class="text-center py-5">
+                                            <td colspan="29" class="text-center py-5">
                                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                                     <div class="mb-3 p-3 rounded-circle" style="background-color: var(--primary-light);">
                                                         <i data-lucide="file-spreadsheet" style="width: 40px; height: 40px; color: var(--primary-color);"></i>
@@ -735,7 +746,11 @@
                             <label class="text-muted small text-uppercase fw-semibold">Net Admits</label>
                             <div class="fw-bold fs-6" style="color: #4338ca;">${Number(report.net_adm || 0).toLocaleString()}</div>
                         </div>
-                        <div class="col-12 col-md-6">
+                        <div class="col-6 col-md-3">
+                            <label class="text-muted small text-uppercase fw-semibold">Total Deduction</label>
+                            <div class="fw-bold fs-6 text-danger">₹ ${Number(report.total_deduction || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                        </div>
+                        <div class="col-12 col-md-9">
                             <label class="text-muted small text-uppercase fw-semibold">Distributor / Theatre Address</label>
                             <div class="p-2 rounded bg-light border text-secondary small" style="white-space: pre-line;">${report.distributor_address || 'No address text extracted'}</div>
                         </div>

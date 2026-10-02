@@ -443,6 +443,91 @@ def extract_all_metadata_fast(pdf, fallback_name: str = "Unknown Cinema") -> Tup
     final_cinema = extracted_cinema or fallback_name.replace('.pdf', '').replace('.PDF', '')
     return final_date, final_cinema, extracted_address
 
+def extract_total_deduction(pdf) -> float:
+    """
+    Extracts the 'Total Deduction' amount from the PDF document.
+    Searches line-by-line text, structured tables, and multiline regexes across all pages.
+    """
+    # 1. Line-by-line search in extracted text (handles 'Total Deduction : 1,234.50' or next-line values)
+    for page in pdf.pages:
+        text = page.extract_text() or ""
+        if not text:
+            continue
+
+        lines = text.split('\n')
+        for idx, line in enumerate(lines):
+            l_clean = line.strip()
+            l_lower = l_clean.lower()
+            if "total deduction" in l_lower or "total deductions" in l_lower:
+                after_match = re.split(r'total\s+deductions?\s*[:\-]?', l_clean, flags=re.IGNORECASE)
+                if len(after_match) > 1 and after_match[1].strip():
+                    rem = after_match[1].strip()
+                    num_match = re.search(r'([0-9,]+(?:\.[0-9]{1,2})?)', rem)
+                    if num_match:
+                        raw_num = num_match.group(1).replace(',', '')
+                        try:
+                            return round(float(raw_num), 2)
+                        except ValueError:
+                            pass
+
+                if idx + 1 < len(lines):
+                    next_line = lines[idx + 1].strip()
+                    num_match = re.match(r'^(?:Rs\.?|INR|₹)?\s*([0-9,]+(?:\.[0-9]{1,2})?)', next_line, re.IGNORECASE)
+                    if num_match:
+                        raw_num = num_match.group(1).replace(',', '')
+                        try:
+                            return round(float(raw_num), 2)
+                        except ValueError:
+                            pass
+
+    # 2. Check structured tables for 'Total Deduction' rows
+    for page in pdf.pages:
+        try:
+            tables = page.extract_tables() or []
+        except Exception:
+            tables = []
+        for table in tables:
+            for row in table:
+                if not row:
+                    continue
+                row_str = " ".join(str(c or '') for c in row).lower()
+                if "total deduction" in row_str or "total deductions" in row_str:
+                    for cell in reversed(row):
+                        if not cell:
+                            continue
+                        c_str = str(cell).strip()
+                        num_match = re.search(r'([0-9,]+(?:\.[0-9]{1,2})?)', c_str)
+                        if num_match and not any(term in c_str.lower() for term in ("total", "deduction")):
+                            raw_num = num_match.group(1).replace(',', '')
+                            try:
+                                return round(float(raw_num), 2)
+                            except ValueError:
+                                pass
+                        elif num_match and any(term in c_str.lower() for term in ("total", "deduction")):
+                            parts = re.split(r'total\s+deductions?\s*[:\-]?', c_str, flags=re.IGNORECASE)
+                            if len(parts) > 1 and parts[1].strip():
+                                n_m = re.search(r'([0-9,]+(?:\.[0-9]{1,2})?)', parts[1])
+                                if n_m:
+                                    try:
+                                        return round(float(n_m.group(1).replace(',', '')), 2)
+                                    except ValueError:
+                                        pass
+
+    # 3. Multiline regex fallback across full page text
+    for page in pdf.pages:
+        text = page.extract_text() or ""
+        if not text:
+            continue
+        m = re.search(r'total\s+deductions?\s*[:\-]?\s*(?:Rs\.?|INR|₹)?\s*([0-9,]+(?:\.[0-9]{1,2})?)', text, re.IGNORECASE)
+        if m:
+            raw_num = m.group(1).replace(',', '')
+            try:
+                return round(float(raw_num), 2)
+            except ValueError:
+                pass
+
+    return 0.0
+
 def extract_date_safe(pdf) -> datetime:
     dt, _, _ = extract_all_metadata_fast(pdf)
     return dt

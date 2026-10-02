@@ -12,6 +12,7 @@ from helpers.common_helper import (
     extract_dcr_table_data,
     extract_dcr_table_data_with_diagnostics,
     extract_all_metadata_fast,
+    extract_total_deduction,
     extract_date_safe,
     extract_address_safe,
     extract_cinema_name_safe,
@@ -41,6 +42,7 @@ def _parse_pdf_sync(file_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str
             return None, diagnostic_reason or "No table found with required columns (Day, Shows, Attendance, Nett)."
 
         pdfdate, cinemaname, address = extract_all_metadata_fast(pdf, filename)
+        total_deduction = extract_total_deduction(pdf)
 
         detail_records = []
         for item in response_data:
@@ -60,6 +62,7 @@ def _parse_pdf_sync(file_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str
             "report_date": int(pdfdate.timestamp()),
             "distributor_address": address,
             "cinema_name": cinemaname,
+            "total_deduction": total_deduction,
             "details": detail_records,
             "date_display": pdfdate.strftime("%d/%m/%Y"),
         }, None
