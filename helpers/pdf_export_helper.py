@@ -244,7 +244,7 @@ def generate_dcr_pdf(report: Dict[str, Any]) -> io.BytesIO:
 
     # System footer note
     footer_text = Paragraph(
-        f"<font size='8' color='#94a3b8'>Generated via AeroData XLS DCR Suite &bull; {file_name}</font>",
+        f"<font size='8' color='#94a3b8'>Generated via First Film Studios &bull; {file_name}</font>",
         subtitle_style
     )
     elements.append(footer_text)
