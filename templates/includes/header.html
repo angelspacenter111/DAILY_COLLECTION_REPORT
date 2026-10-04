@@ -1,7 +1,7 @@
 <header class="app-header">
     <div class="d-flex align-items-center">
         <button class="btn btn-link d-lg-none p-0 me-3 text-main" id="mobile-toggle" aria-label="Toggle Sidebar">
-        <i data-lucide="menu"></i>
+            <i data-lucide="menu"></i>
         </button>
         <div class="header-search">
             <div class="input-group">
@@ -11,22 +11,35 @@
         </div>
     </div>
     <div class="header-actions">
-        
         <div class="dropdown">
-            <div class="avatar-wrapper dropdown-toggle" id="profile-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Sarah Connor" class="avatar-img">
+            <div class="avatar-wrapper dropdown-toggle d-flex align-items-center gap-2 cursor-pointer" id="profile-dropdown-btn" data-bs-toggle="dropdown" aria-expanded="false" style="cursor: pointer;">
+                <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold shadow-sm" style="width: 38px; height: 38px; background: {% if current_user and current_user.get('role') == 'super_admin' %}linear-gradient(135deg, #7c3aed, #4f46e5){% else %}linear-gradient(135deg, #0284c7, #0369a1){% endif %}; font-size: 0.9rem;">
+                    {{ (current_user.get('full_name', 'U') if current_user else 'U')[0]|upper }}
+                </div>
             </div>
             <ul class="dropdown-menu dropdown-menu-end shadow-lg modal-content-custom" aria-labelledby="profile-dropdown-btn">
                 <li class="px-3 py-2 border-bottom border-color">
-                    <div class="fw-bold">Sarah Connor</div>
-                    <div class="text-muted" style="font-size: 0.8rem;">sarah.c@aerodata.io</div>
+                    <div class="fw-bold">{{ current_user.get('full_name', 'Guest') if current_user else 'Guest' }}</div>
+                    <div class="text-muted small">
+                        @{{ current_user.get('username', 'guest') if current_user else 'guest' }}
+                        &bull;
+                        <span class="fw-semibold text-primary">
+                            {% if current_user and current_user.get('role') == 'super_admin' %}Super Admin{% else %}User{% endif %}
+                        </span>
+                    </div>
                 </li>
-                <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="user" class="me-2" style="width: 16px;"></i> My Profile</a></li>
-                <li><a class="dropdown-item py-2" href="settings.html"><i data-lucide="settings" class="me-2" style="width: 16px;"></i> Account Settings</a></li>
+                {% if current_user and current_user.get('role') == 'super_admin' %}
                 <li>
-                    <hr class="dropdown-divider border-color">
+                    <a class="dropdown-item py-2" href="{{BASE_URL + '/users'}}">
+                        <i data-lucide="users" class="me-2" style="width: 16px;"></i> User Management
+                    </a>
                 </li>
-                <li><a class="dropdown-item py-2 text-danger" href="#" id="logout-btn"><i data-lucide="log-out" class="me-2" style="width: 16px;"></i> Sign Out</a></li>
+                {% endif %}
+                <li>
+                    <a class="dropdown-item py-2 text-danger" href="/logout">
+                        <i data-lucide="log-out" class="me-2" style="width: 16px;"></i> Sign Out
+                    </a>
+                </li>
             </ul>
         </div>
     </div>

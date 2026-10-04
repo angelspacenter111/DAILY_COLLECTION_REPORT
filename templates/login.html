@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sign In | AeroData XLS</title>
+    {% include "includes/css.html" %}
+    <style>
+        body {
+            background: linear-gradient(135deg, #f0f4ff 0%, #eef2f6 50%, #f8fafc 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0;
+            padding: 1.5rem;
+        }
+        .login-card {
+            width: 100%;
+            max-width: 420px;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.08), 0 0 1px 1px rgba(0, 0, 0, 0.04);
+            padding: 2.5rem 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+        .login-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, #2563eb, #7c3aed, #06b6d4);
+        }
+        .brand-badge {
+            width: 52px;
+            height: 52px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+            font-weight: 800;
+            margin: 0 auto 1.25rem;
+            box-shadow: 0 10px 20px -5px rgba(37, 99, 235, 0.4);
+        }
+        .form-floating > .form-control:focus ~ label,
+        .form-floating > .form-control:not(:placeholder-shown) ~ label {
+            color: #2563eb;
+        }
+        .form-control:focus {
+            border-color: #2563eb;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+        }
+        .btn-signin {
+            background: linear-gradient(135deg, #2563eb, #1d4ed8);
+            border: none;
+            padding: 0.75rem 1.25rem;
+            font-weight: 600;
+            letter-spacing: 0.2px;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.25);
+        }
+        .btn-signin:hover {
+            background: linear-gradient(135deg, #1d4ed8, #1e40af);
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(37, 99, 235, 0.35);
+        }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="text-center mb-4">
+            <div class="brand-badge">A</div>
+            <h3 class="fw-bold text-dark mb-1">AeroData XLS</h3>
+            <p class="text-muted small mb-0">Daily Collection Report Management Portal</p>
+        </div>
+
+        {% if error %}
+        <div class="alert alert-danger py-2 px-3 d-flex align-items-center gap-2 mb-3" role="alert" style="font-size: 0.85rem; border-radius: 10px;">
+            <i data-lucide="alert-circle" style="width: 16px; height: 16px; flex-shrink: 0;"></i>
+            <div>{{ error }}</div>
+        </div>
+        {% endif %}
+
+        <form action="/login" method="POST">
+            <div class="mb-3">
+                <label for="username" class="form-label small fw-semibold text-secondary">Username</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted">
+                        <i data-lucide="user" style="width: 16px; height: 16px;"></i>
+                    </span>
+                    <input type="text" class="form-control border-start-0" id="username" name="username" placeholder="Enter your username" required autofocus autocomplete="username">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label for="password" class="form-label small fw-semibold text-secondary">Password</label>
+                <div class="input-group">
+                    <span class="input-group-text bg-light border-end-0 text-muted">
+                        <i data-lucide="lock" style="width: 16px; height: 16px;"></i>
+                    </span>
+                    <input type="password" class="form-control border-start-0" id="password" name="password" placeholder="Enter your password" required autocomplete="current-password">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-signin w-100 py-2 d-flex align-items-center justify-content-center gap-2 mb-3">
+                <span>Sign In to Dashboard</span>
+                <i data-lucide="arrow-right" style="width: 16px; height: 16px;"></i>
+            </button>
+        </form>
+
+        <div class="text-center pt-3 border-top">
+            <small class="text-muted" style="font-size: 0.75rem;">
+                Protected System &bull; Cinema DCR Suite &bull; &copy; 2026
+            </small>
+        </div>
+    </div>
+
+    {% include "includes/js.html" %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+    </script>
+</body>
+</html>

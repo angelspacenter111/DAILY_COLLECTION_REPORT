@@ -17,9 +17,11 @@
                             <h1 class="h3 fw-bold mb-1">Dashboard</h1>
                             <p class="text-muted mb-0">Monitor uploads, extraction counts, and target dataset metrics.</p>
                         </div>
-                        <a href="pdf-uploads.html" class="btn btn-primary">
+                        {% if current_user and current_user.get('role') == 'super_admin' %}
+                        <a href="/create" class="btn btn-primary">
                         <i data-lucide="plus" class="me-1"></i> Upload New PDFs
                         </a>
+                        {% endif %}
                     </div>
                     <div class="row g-4 mb-4">
                         <div class="col-12 col-sm-6 col-xxl-2">

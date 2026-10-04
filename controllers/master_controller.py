@@ -4,10 +4,12 @@ from typing import Any, Dict, List, Optional, Tuple
 from datetime import datetime
 
 from fastapi import Request, UploadFile, File
+from fastapi.responses import RedirectResponse
 from fastapi.templating import Jinja2Templates
 import pdfplumber
 
 from config import BASE_URL
+from controllers.auth_controller import get_current_user
 from helpers.common_helper import (
     extract_dcr_table_data,
     extract_dcr_table_data_with_diagnostics,
@@ -25,11 +27,19 @@ logger = logging.getLogger(__name__)
 templates = Jinja2Templates(directory="templates")
 
 async def index(request: Request):
-    context = {"BASE_URL": BASE_URL}
+    current_user = await get_current_user(request)
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=302)
+    context = {"BASE_URL": BASE_URL, "current_user": current_user}
     return templates.TemplateResponse(request=request, name="index.html", context=context)
 
 async def create(request: Request):
-    context = {"BASE_URL": BASE_URL}
+    current_user = await get_current_user(request)
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=302)
+    if current_user.get("role") != "super_admin":
+        return RedirectResponse(url="/dcrextracter", status_code=302)
+    context = {"BASE_URL": BASE_URL, "current_user": current_user}
     return templates.TemplateResponse(request=request, name="create.html", context=context)
 
 import asyncio
@@ -71,6 +81,12 @@ def _parse_pdf_sync(file_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str
         }, None
 
 async def createprocessmethod(request: Request, pdfpostfiles: List[UploadFile] = File(...)):
+    current_user = await get_current_user(request)
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=302)
+    if current_user.get("role") != "super_admin":
+        return RedirectResponse(url="/dcrextracter", status_code=302)
+
     uploaded_files = []
     failed_files = []
     semaphore = asyncio.Semaphore(4)
@@ -128,6 +144,7 @@ async def createprocessmethod(request: Request, pdfpostfiles: List[UploadFile] =
         "message": f"{len(uploaded_files)} file(s) uploaded successfully, {len(failed_files)} file(s) failed.",
         "uploaded_files": uploaded_files,
         "failed_files": failed_files,
+        "current_user": current_user,
         "BASE_URL": BASE_URL
     }
     return templates.TemplateResponse(request=request, name="createprocessmethod.html", context=context)

@@ -259,6 +259,7 @@
                             </p>
                         </div>
                         <div class="d-flex gap-2">
+                            {% if current_user and current_user.get('role') == 'super_admin' %}
                             <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" id="btn-sync-emails" onclick="syncEmailsNow()">
                                 <i data-lucide="mail-check" style="width: 15px; height: 15px;"></i>
                                 <span id="sync-btn-text">Sync Emails</span>
@@ -266,12 +267,15 @@
                             <a href="/create" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1">
                                 <i data-lucide="upload" style="width: 15px; height: 15px;"></i> Upload PDFs
                             </a>
+                            {% endif %}
                             <a href="/downloadcdrexcel" class="btn btn-success btn-sm d-inline-flex align-items-center gap-1">
                                 <i data-lucide="download" style="width: 15px; height: 15px;"></i> Export Excel
                             </a>
+                            {% if current_user and current_user.get('role') == 'super_admin' %}
                             <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1" id="btn-clear-all" onclick="confirmClearAll()">
                                 <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i> Clear All
                             </button>
+                            {% endif %}
                         </div>
                     </div>
 
@@ -510,9 +514,14 @@
                                                     <button type="button" class="btn-action-icon" title="View Full Report Details" onclick="viewReportModal('{{ row['id'] }}')">
                                                         <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
                                                     </button>
+                                                    <a href="/api/records/download-pdf/{{ row['id'] }}" class="btn-action-icon text-primary" title="Download DCR (PDF)" target="_blank">
+                                                        <i data-lucide="file-down" style="width: 14px; height: 14px;"></i>
+                                                    </a>
+                                                    {% if current_user and current_user.get('role') == 'super_admin' %}
                                                     <button type="button" class="btn-action-icon btn-action-delete" title="Delete Record" onclick="deleteReportRecord('{{ row['id'] }}', '{{ row['file_name'] }}')">
                                                         <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
                                                     </button>
+                                                    {% endif %}
                                                 </div>
                                             </td>
                                         </tr>
@@ -572,7 +581,11 @@
                     <div class="modal-body p-4" id="modal-body-content">
                         <!-- Populated dynamically via JS -->
                     </div>
-                    <div class="modal-footer border-top">
+                    <div class="modal-footer border-top d-flex justify-content-between align-items-center">
+                        <a id="modal-download-pdf-btn" href="#" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm" target="_blank">
+                            <i data-lucide="file-down" style="width: 15px; height: 15px;"></i>
+                            <span>Download DCR (PDF)</span>
+                        </a>
                         <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
                     </div>
                 </div>
@@ -720,6 +733,11 @@
                 if (!report) return;
 
                 document.getElementById('modal-file-title').textContent = report.file_name || 'Report Details';
+
+                const pdfBtn = document.getElementById('modal-download-pdf-btn');
+                if (pdfBtn) {
+                    pdfBtn.href = '/api/records/download-pdf/' + (report.id || report._id);
+                }
 
                 const details = report.details || report.report_data || [];
                 let detailsRowsHtml = '';

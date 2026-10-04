@@ -140,7 +140,7 @@ document.addEventListener('DOMContentLoaded', () => {
   if (document.getElementById('logs-search')) {
     initLogs();
   }
-  if (document.getElementById('users-tbody')) {
+  if (document.getElementById('users-tbody') && document.getElementById('invite-user-form')) {
     initUsers();
   }
   if (document.getElementById('settings-save-btn')) {

@@ -1,9 +1,13 @@
 from fastapi import Request
 from fastapi.templating import Jinja2Templates
-from fastapi.responses import StreamingResponse, JSONResponse
+from fastapi.responses import StreamingResponse, JSONResponse, RedirectResponse
 from config import BASE_URL
+from controllers.auth_controller import get_current_user
+from helpers.auth_helper import build_movie_filter_query, user_can_access_movie
+from helpers.pdf_export_helper import generate_dcr_pdf
 from helpers.database_helper import (
     fetchrecords,
+    get_dcr_report_by_id,
     main_query,
     get_dcr_summary,
     delete_dcr_report,
@@ -17,16 +21,28 @@ from io import BytesIO
 templates = Jinja2Templates(directory="templates")
 
 async def extracterindex(request: Request):
-    result = await fetchrecords(main_query())
+    current_user = await get_current_user(request)
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    filter_query = build_movie_filter_query(current_user)
+    result = await fetchrecords(filter_query)
     summary = get_dcr_summary(result)
     context = {
         "BASE_URL": BASE_URL,
+        "current_user": current_user,
         "reports": result,
         "summary": summary
     }
     return templates.TemplateResponse(request=request, name="extracterindex.html", context=context)
 
 async def delete_record(request: Request, record_id: str):
+    current_user = await get_current_user(request)
+    if not current_user:
+        return JSONResponse({"status": False, "message": "Unauthorized."}, status_code=401)
+    if current_user.get("role") != "super_admin":
+        return JSONResponse({"status": False, "message": "Permission denied. Only Super Admin can delete records."}, status_code=403)
+
     success = await delete_dcr_report(record_id)
     return JSONResponse({
         "status": success,
@@ -34,6 +50,12 @@ async def delete_record(request: Request, record_id: str):
     })
 
 async def clear_all_records(request: Request):
+    current_user = await get_current_user(request)
+    if not current_user:
+        return JSONResponse({"status": False, "message": "Unauthorized."}, status_code=401)
+    if current_user.get("role") != "super_admin":
+        return JSONResponse({"status": False, "message": "Permission denied. Only Super Admin can clear records."}, status_code=403)
+
     count = await clear_all_dcr_reports()
     return JSONResponse({
         "status": True,
@@ -41,9 +63,41 @@ async def clear_all_records(request: Request):
         "message": f"{count} records cleared successfully."
     })
 
-async def downloadExcel(request: Request):
+async def download_single_report_pdf(request: Request, record_id: str):
+    current_user = await get_current_user(request)
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=302)
 
-    result = await fetchrecords(main_query())
+    report = await get_dcr_report_by_id(record_id)
+    if not report:
+        return JSONResponse({"status": False, "message": "DCR Report not found."}, status_code=404)
+
+    movie_name = report.get("movie_name", "")
+    if not user_can_access_movie(current_user, movie_name):
+        return JSONResponse({"status": False, "message": "Access denied for this movie report."}, status_code=403)
+
+    try:
+        pdf_buffer = generate_dcr_pdf(report)
+        clean_cinema = "".join(c for c in report.get("cinema_name", "Cinema") if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
+        clean_movie = "".join(c for c in (movie_name or "DCR") if c.isalnum() or c in (" ", "_", "-")).strip().replace(" ", "_")
+        filename = f"DCR_{clean_cinema}_{clean_movie}.pdf"
+        return StreamingResponse(
+            pdf_buffer,
+            media_type="application/pdf",
+            headers={
+                "Content-Disposition": f'attachment; filename="{filename}"'
+            }
+        )
+    except Exception as e:
+        return JSONResponse({"status": False, "message": f"Error generating PDF: {str(e)}"}, status_code=500)
+
+async def downloadExcel(request: Request):
+    current_user = await get_current_user(request)
+    if not current_user:
+        return RedirectResponse(url="/login", status_code=302)
+
+    filter_query = build_movie_filter_query(current_user)
+    result = await fetchrecords(filter_query)
 
     wb = Workbook()
     ws = wb.active
@@ -258,6 +312,12 @@ async def downloadExcel(request: Request):
 
 async def sync_emails_action(request: Request):
     """API endpoint to manually trigger email sync and return status to frontend."""
+    current_user = await get_current_user(request)
+    if not current_user:
+        return JSONResponse({"status": False, "message": "Unauthorized."}, status_code=401)
+    if current_user.get("role") != "super_admin":
+        return JSONResponse({"status": False, "message": "Permission denied. Only Super Admin can sync emails."}, status_code=403)
+
     from services.email_listener import check_emails_and_process
     try:
         result = await check_emails_and_process()

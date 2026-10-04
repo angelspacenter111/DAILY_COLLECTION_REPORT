@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Management & Movie Mapping | AeroData XLS</title>
+    {% include "includes/css.html" %}
+    <style>
+        .badge-movie-tag {
+            background-color: #eff6ff;
+            color: #1d4ed8;
+            border: 1px solid #bfdbfe;
+            border-radius: 6px;
+            padding: 0.2rem 0.45rem;
+            font-size: 0.72rem;
+            font-weight: 600;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .movie-scroll-box {
+            max-height: 150px;
+            overflow-y: auto;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.6rem 0.75rem;
+        }
+        /* Ensure modal never overflows viewport vertically */
+        .modal-dialog-scrollable .modal-content {
+            max-height: 90vh;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        {% include "includes/sidebar.html" %}
+        <main class="app-content">
+            {% include "includes/header.html" %}
+            <section class="page-container" id="users-view-wrapper">
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">User Access & Movie Mapping</h1>
+                        <p class="text-muted mb-0">Create users, assign role permissions, and restrict DCR reports by movie.</p>
+                    </div>
+                    <div>
+                        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm" data-bs-toggle="modal" data-bs-target="#createUserModal">
+                            <i data-lucide="user-plus" style="width: 16px; height: 16px;"></i>
+                            <span>Create New User</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Users Table Card -->
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h3 class="h5 fw-bold mb-0">Registered Users</h3>
+                        <span class="badge bg-primary-subtle text-primary px-3 py-2 fs-6 rounded-pill">
+                            {{ users|length }} User(s) Total
+                        </span>
+                    </div>
+
+                    <div class="table-responsive-custom">
+                        <table class="table table-custom align-middle">
+                            <thead>
+                                <tr>
+                                    <th>User</th>
+                                    <th>Username</th>
+                                    <th>Role</th>
+                                    <th>Mapped Movie(s)</th>
+                                    <th>Created On</th>
+                                    <th>Created By</th>
+                                    <th class="text-center" style="width: 120px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="dcr-users-table-body">
+                                {% for u in users %}
+                                <tr id="user-row-{{ u['id'] }}">
+                                    <td>
+                                        <div class="d-flex align-items-center gap-2">
+                                            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold" style="width: 36px; height: 36px; background: {% if u['role'] == 'super_admin' %}linear-gradient(135deg, #7c3aed, #4f46e5){% else %}linear-gradient(135deg, #0284c7, #0369a1){% endif %}; font-size: 0.85rem;">
+                                                {{ (u['full_name'] or u['username'])[0]|upper }}
+                                            </div>
+                                            <div>
+                                                <div class="fw-semibold text-dark">{{ u['full_name'] }}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td>
+                                        <code class="text-primary fw-medium px-2 py-1 rounded bg-light border">@{{ u['username'] }}</code>
+                                    </td>
+                                    <td>
+                                        {% if u['role'] == 'super_admin' %}
+                                            <span class="badge bg-purple-subtle text-purple px-2 py-1" style="background-color: rgba(124, 58, 237, 0.1); color: #6d28d9; font-weight: 600;">
+                                                <i data-lucide="shield-check" class="me-1 d-inline" style="width: 12px; height: 12px;"></i> Super Admin
+                                            </span>
+                                        {% else %}
+                                            <span class="badge bg-info-subtle text-info px-2 py-1" style="background-color: rgba(6, 182, 212, 0.1); color: #0891b2; font-weight: 600;">
+                                                <i data-lucide="user" class="me-1 d-inline" style="width: 12px; height: 12px;"></i> Normal User (Read-Only)
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if u['role'] == 'super_admin' %}
+                                            <span class="badge text-purple" style="background: rgba(124, 58, 237, 0.08); border: 1px solid rgba(124, 58, 237, 0.2); font-size: 0.75rem;">
+                                                <i data-lucide="check-check" class="me-1 d-inline" style="width: 11px; height: 11px;"></i> All Movies (Unrestricted)
+                                            </span>
+                                        {% elif u.get('assigned_movies') and u['assigned_movies']|length > 0 %}
+                                            <div class="d-flex flex-wrap gap-1" id="user-movies-display-{{ u['id'] }}">
+                                                {% for m in u['assigned_movies'] %}
+                                                <span class="badge-movie-tag">
+                                                    <i data-lucide="film" style="width: 10px; height: 10px;"></i>{{ m }}
+                                                </span>
+                                                {% endfor %}
+                                            </div>
+                                        {% else %}
+                                            <span class="badge bg-secondary-subtle text-secondary" id="user-movies-display-{{ u['id'] }}" style="font-size: 0.72rem;">
+                                                No movies assigned (0 DCR visible)
+                                            </span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-muted" style="font-size: 0.85rem;">
+                                        {{ u.get('created_at_display', 'Recently') }}
+                                    </td>
+                                    <td class="text-muted small">
+                                        {{ u.get('created_by', 'system') }}
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="d-flex align-items-center justify-content-center gap-1">
+                                            {% if u['role'] != 'super_admin' %}
+                                            <button type="button" class="btn btn-outline-primary btn-sm p-1 rounded" title="Edit Movie Access" onclick='openEditMoviesModal("{{ u['id'] }}", "{{ u['username'] }}", {{ u.get("assigned_movies", [])|tojson|safe }})'>
+                                                <i data-lucide="film" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            {% endif %}
+                                            {% if u['username'] != current_user['username'] %}
+                                            <button type="button" class="btn btn-outline-danger btn-sm p-1 rounded" title="Delete User" onclick="deleteUser('{{ u['id'] }}', '{{ u['username'] }}')">
+                                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                            </button>
+                                            {% else %}
+                                            <span class="text-muted small" title="Current session account">(You)</span>
+                                            {% endif %}
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Create User Modal (Scrollable & Responsive) -->
+    <div class="modal fade" id="createUserModal" tabindex="-1" aria-labelledby="createUserModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable modal-lg">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="p-2 rounded bg-primary-subtle text-primary">
+                            <i data-lucide="user-plus" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="createUserModalLabel">Create New User</h5>
+                            <small class="text-muted" style="font-size: 0.75rem;">Add credentials and map movies for DCR access.</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="create-user-form" onsubmit="handleCreateUser(event)">
+                    <div class="modal-body p-4">
+                        <div id="modal-error-alert" class="alert alert-danger d-none py-2 px-3 small mb-3 fw-medium"></div>
+
+                        <!-- 2-Column Responsive Inputs -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-md-6">
+                                <label for="new-full-name" class="form-label small fw-semibold">Full Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="new-full-name" placeholder="e.g. Rahul Sharma" required>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="new-username" class="form-label small fw-semibold">Username (for Login) <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="new-username" placeholder="e.g. rahul123" required autocomplete="off">
+                                <small class="text-muted" style="font-size: 0.72rem;">Lowercase letters & numbers, no spaces.</small>
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="new-password" class="form-label small fw-semibold">Password <span class="text-danger">*</span></label>
+                                <input type="password" class="form-control" id="new-password" placeholder="At least 4 characters" required autocomplete="new-password">
+                            </div>
+                            <div class="col-12 col-md-6">
+                                <label for="new-role" class="form-label small fw-semibold">Role / Permission Level</label>
+                                <select class="form-select" id="new-role" onchange="handleRoleChange(this.value)">
+                                    <option value="user" selected>Normal User (Read-Only DCR)</option>
+                                    <option value="super_admin">Super Admin (Full Access: Upload, Delete, Users)</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Movie Mapping Section -->
+                        <div class="mb-2" id="create-movie-mapping-section">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-semibold mb-0">Map Allowed Movies to User</label>
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small" style="font-size: 0.75rem;" onclick="toggleAllCheckboxes('create-movie-checkbox')">Toggle Select All</button>
+                            </div>
+                            <div class="movie-scroll-box mb-2" id="create-movie-checkboxes-container">
+                                {% if distinct_movies %}
+                                    {% for m in distinct_movies %}
+                                    <div class="form-check form-check-sm mb-1">
+                                        <input class="form-check-input create-movie-checkbox" type="checkbox" value="{{ m }}" id="chk-create-{{ loop.index }}">
+                                        <label class="form-check-label small" for="chk-create-{{ loop.index }}">{{ m }}</label>
+                                    </div>
+                                    {% endfor %}
+                                {% else %}
+                                    <div class="text-muted small py-2 text-center">No distinct movies found in DCR database yet.</div>
+                                {% endif %}
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="create-custom-movie" placeholder="Add custom movie name if not in list...">
+                                <button class="btn btn-outline-secondary" type="button" onclick="addCustomMovie('create')">Add</button>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">User will only see and download DCR reports matching these selected movies.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm" id="save-user-btn">
+                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                            <span>Create User</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Movie Mapping Modal (Scrollable) -->
+    <div class="modal fade" id="editMoviesModal" tabindex="-1" aria-labelledby="editMoviesModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header border-bottom py-3">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="p-2 rounded bg-primary-subtle text-primary">
+                            <i data-lucide="film" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <h5 class="modal-title fw-bold mb-0" id="editMoviesModalLabel">Edit Movie Access</h5>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="edit-movies-form" onsubmit="handleUpdateUserMovies(event)">
+                    <input type="hidden" id="edit-user-id">
+                    <div class="modal-body p-4">
+                        <div id="modal-edit-error-alert" class="alert alert-danger d-none py-2 px-3 small mb-3 fw-medium"></div>
+
+                        <div class="mb-3">
+                            <label class="small text-muted text-uppercase fw-semibold">Target User</label>
+                            <div class="fw-bold fs-6" id="edit-user-name-display"></div>
+                        </div>
+
+                        <div class="mb-3">
+                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                <label class="form-label small fw-semibold mb-0">Assigned Movies</label>
+                                <button type="button" class="btn btn-link btn-sm p-0 text-decoration-none small" style="font-size: 0.75rem;" onclick="toggleAllCheckboxes('edit-movie-checkbox')">Toggle Select All</button>
+                            </div>
+                            <div class="movie-scroll-box mb-2" id="edit-movies-list">
+                                <!-- Populated dynamically by openEditMoviesModal -->
+                            </div>
+                            <div class="input-group input-group-sm">
+                                <input type="text" class="form-control" id="edit-custom-movie" placeholder="Add custom movie name...">
+                                <button class="btn btn-outline-secondary" type="button" onclick="addCustomMovie('edit')">Add</button>
+                            </div>
+                            <small class="text-muted" style="font-size: 0.72rem;">Check or uncheck movies to adjust what this user can read and download.</small>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-top py-2">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm d-flex align-items-center gap-1 shadow-sm" id="save-edit-movies-btn">
+                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                            <span>Save Movie Access</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden Distinct Movies Dataset -->
+    <script>
+        const DISTINCT_MOVIES = {{ distinct_movies|tojson|safe if distinct_movies else "[]" }};
+    </script>
+
+    {% include "includes/js.html" %}
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+
+            // Reset modal state on open
+            document.getElementById('createUserModal')?.addEventListener('show.bs.modal', () => {
+                document.getElementById('modal-error-alert')?.classList.add('d-none');
+            });
+
+            // Enter key on custom movie inputs
+            document.getElementById('create-custom-movie')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomMovie('create');
+                }
+            });
+            document.getElementById('edit-custom-movie')?.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    addCustomMovie('edit');
+                }
+            });
+        });
+
+        function handleRoleChange(role) {
+            const section = document.getElementById('create-movie-mapping-section');
+            if (section) {
+                if (role === 'super_admin') {
+                    section.classList.add('d-none');
+                } else {
+                    section.classList.remove('d-none');
+                }
+            }
+        }
+
+        function toggleAllCheckboxes(className) {
+            const checkboxes = document.querySelectorAll(`.${className}`);
+            if (checkboxes.length === 0) return;
+            const anyUnchecked = Array.from(checkboxes).some(cb => !cb.checked);
+            checkboxes.forEach(cb => cb.checked = anyUnchecked);
+        }
+
+        function addCustomMovie(target) {
+            const input = document.getElementById(`${target}-custom-movie`);
+            const val = input.value.trim();
+            if (!val) return;
+
+            const container = target === 'create'
+                ? document.getElementById('create-movie-checkboxes-container')
+                : document.getElementById('edit-movies-list');
+
+            // Check if already exists
+            const existing = Array.from(container.querySelectorAll('input[type="checkbox"]')).map(cb => cb.value.toUpperCase());
+            if (existing.includes(val.toUpperCase())) {
+                input.value = '';
+                return;
+            }
+
+            const id = `chk-${target}-custom-${Date.now()}`;
+            const div = document.createElement('div');
+            div.className = 'form-check form-check-sm mb-1';
+            div.innerHTML = `
+                <input class="form-check-input ${target}-movie-checkbox" type="checkbox" value="${val}" id="${id}" checked>
+                <label class="form-check-label small" for="${id}">${val}</label>
+            `;
+            container.appendChild(div);
+            input.value = '';
+        }
+
+        async function handleCreateUser(e) {
+            e.preventDefault();
+            const errBox = document.getElementById('modal-error-alert');
+            errBox.classList.add('d-none');
+
+            const fullName = document.getElementById('new-full-name').value.trim();
+            const username = document.getElementById('new-username').value.trim().toLowerCase();
+            const password = document.getElementById('new-password').value;
+            const role = document.getElementById('new-role').value;
+
+            // Client-side quick validation
+            if (!username) {
+                errBox.textContent = 'Please enter a valid Username.';
+                errBox.classList.remove('d-none');
+                errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                document.getElementById('new-username').focus();
+                return;
+            }
+            if (username.includes(' ')) {
+                errBox.textContent = 'Username cannot contain spaces.';
+                errBox.classList.remove('d-none');
+                errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                document.getElementById('new-username').focus();
+                return;
+            }
+            if (!password || password.length < 4) {
+                errBox.textContent = 'Password must be at least 4 characters long.';
+                errBox.classList.remove('d-none');
+                errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                document.getElementById('new-password').focus();
+                return;
+            }
+
+            const btn = document.getElementById('save-user-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Creating...`;
+
+            let assignedMovies = [];
+            if (role === 'user') {
+                const checked = document.querySelectorAll('.create-movie-checkbox:checked');
+                assignedMovies = Array.from(checked).map(cb => cb.value.trim()).filter(Boolean);
+            }
+
+            const payload = {
+                full_name: fullName,
+                username: username,
+                password: password,
+                role: role,
+                assigned_movies: assignedMovies
+            };
+
+            try {
+                const res = await fetch('/api/users/create', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(payload)
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    window.location.reload();
+                } else {
+                    errBox.textContent = data.message || 'Failed to create user.';
+                    errBox.classList.remove('d-none');
+                    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            } catch (err) {
+                errBox.textContent = 'Network or server error: ' + err.message;
+                errBox.classList.remove('d-none');
+                errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Create User</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        function openEditMoviesModal(userId, username, assignedMovies) {
+            document.getElementById('edit-user-id').value = userId;
+            document.getElementById('edit-user-name-display').textContent = `@${username}`;
+            document.getElementById('modal-edit-error-alert').classList.add('d-none');
+
+            const container = document.getElementById('edit-movies-list');
+            container.innerHTML = '';
+
+            const assignedSet = new Set((assignedMovies || []).map(m => m.trim().toUpperCase()));
+
+            // Union of distinct movies and current assigned movies
+            const allMovies = Array.from(new Set([
+                ...DISTINCT_MOVIES,
+                ...(assignedMovies || [])
+            ])).filter(Boolean).sort();
+
+            if (allMovies.length === 0) {
+                container.innerHTML = `<div class="text-muted small py-2 text-center">No movies available. Use the text box below to add one.</div>`;
+            } else {
+                allMovies.forEach((m, idx) => {
+                    const isChecked = assignedSet.has(m.toUpperCase());
+                    const div = document.createElement('div');
+                    div.className = 'form-check form-check-sm mb-1';
+                    div.innerHTML = `
+                        <input class="form-check-input edit-movie-checkbox" type="checkbox" value="${m}" id="chk-edit-${idx}" ${isChecked ? 'checked' : ''}>
+                        <label class="form-check-label small" for="chk-edit-${idx}">${m}</label>
+                    `;
+                    container.appendChild(div);
+                });
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('editMoviesModal'));
+            modal.show();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function handleUpdateUserMovies(e) {
+            e.preventDefault();
+            const userId = document.getElementById('edit-user-id').value;
+            const errBox = document.getElementById('modal-edit-error-alert');
+            errBox.classList.add('d-none');
+
+            const btn = document.getElementById('save-edit-movies-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Saving...`;
+
+            const checked = document.querySelectorAll('.edit-movie-checkbox:checked');
+            const assignedMovies = Array.from(checked).map(cb => cb.value.trim()).filter(Boolean);
+
+            try {
+                const res = await fetch(`/api/users/update-movies/${userId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ assigned_movies: assignedMovies })
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    window.location.reload();
+                } else {
+                    errBox.textContent = data.message || 'Failed to update movie access.';
+                    errBox.classList.remove('d-none');
+                    errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+            } catch (err) {
+                errBox.textContent = 'Server error occurred: ' + err.message;
+                errBox.classList.remove('d-none');
+                errBox.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Save Movie Access</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        async function deleteUser(userId, username) {
+            if (!confirm(`Are you sure you want to delete user @${username}?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/users/delete/${userId}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (data.status) {
+                    const row = document.getElementById(`user-row-${userId}`);
+                    if (row) row.remove();
+                } else {
+                    alert(data.message || 'Failed to delete user.');
+                }
+            } catch (err) {
+                alert('Server error while deleting user.');
+            }
+        }
+    </script>
+</body>
+</html>

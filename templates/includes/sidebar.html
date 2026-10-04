@@ -7,21 +7,41 @@
         <a href="{{BASE_URL}}" class="sidebar-nav-link">
             <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
         </a>
+        {% if current_user and current_user.get('role') == 'super_admin' %}
         <a href="{{BASE_URL + '/create'}}" class="sidebar-nav-link">
             <i data-lucide="file-up"></i>
             <span>DCR Uploads</span>
         </a>
+        {% endif %}
         <a href="{{BASE_URL + '/dcrextracter'}}" class="sidebar-nav-link">
-            <i data-lucide="file-up"></i>
+            <i data-lucide="table"></i>
             <span>DCR Extracter</span>
         </a>
+        {% if current_user and current_user.get('role') == 'super_admin' %}
+        <a href="{{BASE_URL + '/users'}}" class="sidebar-nav-link">
+            <i data-lucide="users"></i>
+            <span>User Control</span>
+        </a>
+        {% endif %}
     </nav>
     <div class="sidebar-footer">
         <div class="d-flex align-items-center">
-            <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="Admin" class="avatar-img me-2">
-            <div>
-                <div class="fw-bold" style="font-size: 0.85rem;" id="user-role-display">Sarah Connor</div>
-                <div class="text-muted" style="font-size: 0.75rem;">Super Admin</div>
+            <div class="rounded-circle d-flex align-items-center justify-content-center text-white fw-bold me-2" style="width: 36px; height: 36px; background: {% if current_user and current_user.get('role') == 'super_admin' %}linear-gradient(135deg, #7c3aed, #4f46e5){% else %}linear-gradient(135deg, #0284c7, #0369a1){% endif %}; font-size: 0.85rem; flex-shrink: 0;">
+                {{ (current_user.get('full_name', 'U') if current_user else 'U')[0]|upper }}
+            </div>
+            <div class="overflow-hidden">
+                <div class="fw-bold text-truncate" style="font-size: 0.85rem;" id="user-role-display">
+                    {{ current_user.get('full_name', 'Guest') if current_user else 'Guest' }}
+                </div>
+                <div class="text-muted text-truncate" style="font-size: 0.72rem;">
+                    {% if current_user and current_user.get('role') == 'super_admin' %}
+                        Super Admin
+                    {% elif current_user %}
+                        Normal User
+                    {% else %}
+                        Not Logged In
+                    {% endif %}
+                </div>
             </div>
         </div>
     </div>

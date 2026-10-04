@@ -80,12 +80,14 @@ async def insert_dcr_report(report_payload: Dict[str, Any]) -> str:
 
 async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[str, Any]] = None) -> List[Dict[str, Any]]:
     """
-    Fetches all DCR reports from MongoDB 'dcr_reports' collection.
+    Fetches DCR reports from MongoDB 'dcr_reports' collection.
+    Supports an optional MongoDB filter query dictionary for movie filtering.
     Maintains compatibility with existing templates and Excel exports.
     """
+    query = sql_string if isinstance(sql_string, dict) else {}
     for attempt in range(3):
         try:
-            cursor = db.dcr_reports.find({}).sort("_id", 1)
+            cursor = db.dcr_reports.find(query).sort("_id", 1)
             reports: List[Dict[str, Any]] = []
             async for doc in cursor:
                 doc["id"] = str(doc.get("_id", ""))
@@ -114,6 +116,22 @@ async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[s
         except Exception as e:
             logger.error("Failed to fetch records from MongoDB: %s", str(e))
             return []
+
+async def get_dcr_report_by_id(report_id: str) -> Optional[Dict[str, Any]]:
+    """Fetches a single DCR report document by ID."""
+    try:
+        doc = await db.dcr_reports.find_one({"_id": ObjectId(report_id)})
+        if doc:
+            doc["id"] = str(doc["_id"])
+            doc["_id"] = str(doc["_id"])
+            doc["movie_name"] = doc.get("movie_name", "") or ""
+            doc["total_deduction"] = float(doc.get("total_deduction", 0.0) or 0.0)
+            if isinstance(doc.get("created_at"), datetime):
+                doc["created_at"] = doc["created_at"].isoformat()
+        return doc
+    except Exception as e:
+        logger.error("Failed to fetch report %s: %s", report_id, str(e))
+        return None
 
 async def init_db_indexes():
     """Ensures performance indexes exist on dcr_reports collection."""
