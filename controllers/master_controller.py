@@ -16,6 +16,7 @@ from helpers.common_helper import (
     extract_date_safe,
     extract_address_safe,
     extract_cinema_name_safe,
+    extract_movie_name_safe,
 )
 from helpers.database_helper import insert_dcr_report
 
@@ -42,6 +43,7 @@ def _parse_pdf_sync(file_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str
             return None, diagnostic_reason or "No table found with required columns (Day, Shows, Attendance, Nett)."
 
         pdfdate, cinemaname, address = extract_all_metadata_fast(pdf, filename)
+        moviename = extract_movie_name_safe(pdf)
         total_deduction = extract_total_deduction(pdf)
 
         detail_records = []
@@ -62,6 +64,7 @@ def _parse_pdf_sync(file_bytes: bytes, filename: str) -> Tuple[Optional[Dict[str
             "report_date": int(pdfdate.timestamp()),
             "distributor_address": address,
             "cinema_name": cinemaname,
+            "movie_name": moviename,
             "total_deduction": total_deduction,
             "details": detail_records,
             "date_display": pdfdate.strftime("%d/%m/%Y"),
@@ -100,6 +103,7 @@ async def createprocessmethod(request: Request, pdfpostfiles: List[UploadFile] =
                 "date": parsed_data["date_display"],
                 "address": parsed_data["distributor_address"],
                 "cinema_name": parsed_data["cinema_name"],
+                "movie_name": parsed_data.get("movie_name", ""),
                 "records_count": len(parsed_data["details"])
             }, None
         except Exception as e:

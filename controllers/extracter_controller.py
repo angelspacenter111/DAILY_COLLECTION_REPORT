@@ -55,19 +55,21 @@ async def downloadExcel(request: Request):
 
     ws.merge_cells("A1:A2")
     ws.merge_cells("B1:B2")
+    ws.merge_cells("C1:C2")
 
     ws["A1"] = "FILE NAME"
     ws["B1"] = "CINEMA NAME"
+    ws["C1"] = "MOVIE NAME"
 
     header_groups = [
-        ("FRIDAY", "C", "E"),
-        ("SATURDAY", "F", "H"),
-        ("SUNDAY", "I", "K"),
-        ("MONDAY", "L", "N"),
-        ("TUESDAY", "O", "Q"),
-        ("WEDNESDAY", "R", "T"),
-        ("THURSDAY", "U", "W"),
-        ("TOTAL", "X", "AA"),
+        ("FRIDAY", "D", "F"),
+        ("SATURDAY", "G", "I"),
+        ("SUNDAY", "J", "L"),
+        ("MONDAY", "M", "O"),
+        ("TUESDAY", "P", "R"),
+        ("WEDNESDAY", "S", "U"),
+        ("THURSDAY", "V", "X"),
+        ("TOTAL", "Y", "AB"),
     ]
 
     for title, start, end in header_groups:
@@ -85,7 +87,7 @@ async def downloadExcel(request: Request):
         "NET SHOW","NET ADM","GRAND TOTAL NET","TOTAL DEDUCTION"
     ]
 
-    col = 3
+    col = 4
 
     for h in headers:
         ws.cell(row=2, column=col).value = h
@@ -101,6 +103,7 @@ async def downloadExcel(request: Request):
 
             row.get("file_name",""),
             row.get("cinema_name",""),
+            row.get("movie_name",""),
 
             row.get("fri_show",0),
             row.get("fri_admits",0),
@@ -144,7 +147,8 @@ async def downloadExcel(request: Request):
     if num_records > 0:
         ws.cell(row=total_row_idx, column=1).value = "GRAND TOTAL"
         ws.cell(row=total_row_idx, column=2).value = f"{num_records} Cinemas"
-        for col_idx in range(3, 28):
+        ws.cell(row=total_row_idx, column=3).value = ""
+        for col_idx in range(4, 29):
             col_letter = get_column_letter(col_idx)
             ws.cell(row=total_row_idx, column=col_idx).value = f"=SUM({col_letter}3:{col_letter}{total_row_idx - 1})"
 
@@ -161,9 +165,9 @@ async def downloadExcel(request: Request):
     header_fill_total = PatternFill(start_color="EEF2FF", end_color="EEF2FF", fill_type="solid")
     total_row_fill = PatternFill(start_color="FEF3C7", end_color="FEF3C7", fill_type="solid")
 
-    net_cols = {5, 8, 11, 14, 17, 20, 23, 26, 27}   # E, H, K, N, Q, T, W, Z, AA
-    adm_cols = {4, 7, 10, 13, 16, 19, 22, 25}       # D, G, J, M, P, S, V, Y
-    show_cols = {3, 6, 9, 12, 15, 18, 21, 24}       # C, F, I, L, O, R, U, X
+    net_cols = {6, 9, 12, 15, 18, 21, 24, 27, 28}   # F, I, L, O, R, U, X, AA, AB
+    adm_cols = {5, 8, 11, 14, 17, 20, 23, 26}       # E, H, K, N, Q, T, W, Z
+    show_cols = {4, 7, 10, 13, 16, 19, 22, 25}      # D, G, J, M, P, S, V, Y
 
     for r_idx, row in enumerate(ws.iter_rows(), start=1):
         is_header = (r_idx in [1, 2])
@@ -174,7 +178,7 @@ async def downloadExcel(request: Request):
                 cell.border = border_standard
                 cell.font = Font(bold=True)
                 cell.alignment = Alignment(horizontal="center", vertical="center", wrap_text=True)
-                cell.fill = header_fill_total if c_idx >= 24 else header_fill_days
+                cell.fill = header_fill_total if c_idx >= 25 else header_fill_days
             elif is_total_summary:
                 cell.border = border_total_row
                 cell.font = Font(bold=True)
@@ -225,13 +229,14 @@ async def downloadExcel(request: Request):
     # Explicit padding for text & total columns
     ws.column_dimensions["A"].width = max(ws.column_dimensions["A"].width or 0, 26)
     ws.column_dimensions["B"].width = max(ws.column_dimensions["B"].width or 0, 30)
-    ws.column_dimensions["X"].width = max(ws.column_dimensions["X"].width or 0, 13)
+    ws.column_dimensions["C"].width = max(ws.column_dimensions["C"].width or 0, 30)
     ws.column_dimensions["Y"].width = max(ws.column_dimensions["Y"].width or 0, 13)
-    ws.column_dimensions["Z"].width = max(ws.column_dimensions["Z"].width or 0, 20)
-    ws.column_dimensions["AA"].width = max(ws.column_dimensions["AA"].width or 0, 18)
+    ws.column_dimensions["Z"].width = max(ws.column_dimensions["Z"].width or 0, 13)
+    ws.column_dimensions["AA"].width = max(ws.column_dimensions["AA"].width or 0, 20)
+    ws.column_dimensions["AB"].width = max(ws.column_dimensions["AB"].width or 0, 18)
 
     # Freeze Header
-    ws.freeze_panes = "C3"
+    ws.freeze_panes = "D3"
 
     # ------------------------
     # Download

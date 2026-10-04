@@ -56,6 +56,7 @@ async def insert_dcr_report(report_payload: Dict[str, Any]) -> str:
     doc = {
         "file_name": report_payload.get("file_name", ""),
         "cinema_name": report_payload.get("cinema_name", ""),
+        "movie_name": report_payload.get("movie_name", ""),
         "distributor_address": report_payload.get("distributor_address", ""),
         "report_date": report_payload.get("report_date", 0),
         "total_deduction": float(report_payload.get("total_deduction", 0.0) or 0.0),
@@ -89,6 +90,7 @@ async def fetchrecords(sql_string: Optional[Any] = None, params: Optional[Dict[s
             async for doc in cursor:
                 doc["id"] = str(doc.get("_id", ""))
                 doc["_id"] = str(doc.get("_id", ""))
+                doc["movie_name"] = doc.get("movie_name", "") or ""
                 if isinstance(doc.get("created_at"), datetime):
                     doc["created_at"] = doc["created_at"].isoformat()
 

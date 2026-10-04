@@ -577,6 +577,96 @@ def extract_total_deduction(pdf) -> float:
 
     return 0.0
 
+def clean_movie_name_str(name: str) -> str:
+    if not name:
+        return ""
+    name = re.sub(r'\s+', ' ', name).strip()
+    name = name.strip(' ,-:_')
+    name = re.split(r'\s+(?:Day|Date|Week)\s*:', name, flags=re.IGNORECASE)[0].strip()
+    return name
+
+def extract_movie_name_safe(pdf, fallback_name: str = "") -> str:
+    """
+    Extracts the movie/film name from the PDF document.
+    Handles multiple layout styles:
+      1. Explicit 'Film Name : <name>' (PVR/INOX layout)
+      2. Explicit 'Film : <name>' (Eylex layout)
+      3. Distributor Report header boxes/tables (Abhiruchi, Miraj, Bhutani, Silwasa, Ramnagar, etc.)
+      4. Show details / screen lines containing movie titles
+    """
+    if not pdf or not getattr(pdf, "pages", None):
+        return fallback_name
+
+    # Strategy 1: Explicit 'Film Name :' or 'Film :' in text
+    for page in pdf.pages[:2]:
+        text = page.extract_text() or ""
+        lines = [l.strip() for l in text.split('\n') if l.strip()]
+
+        for line in lines:
+            m = re.search(r'Film\s*Name\s*:\s*([^,\n\r]+)', line, re.IGNORECASE)
+            if m:
+                val = clean_movie_name_str(m.group(1))
+                if val:
+                    return val
+
+            m2 = re.search(r'Film\s*:\s*([^,\n\r]+)', line, re.IGNORECASE)
+            if m2:
+                val = m2.group(1).strip()
+                if not re.search(r'\b(?:distributor|studios|corporation|ent|pvt|ltd)\b', val, re.IGNORECASE):
+                    val = clean_movie_name_str(val)
+                    if val:
+                        return val
+
+    # Strategy 2: Small header tables (e.g. Abhiruchi City Pride, Miraj, Bhutani, Silwasa, Ramnagar, etc.)
+    for page in pdf.pages[:1]:
+        try:
+            tables = page.extract_tables() or []
+        except Exception:
+            tables = []
+
+        for t in tables:
+            if not t:
+                continue
+            if len(t) in (2, 3) and all(len(row) == 1 for row in t):
+                for row_idx in (1, 0):
+                    cand = str(t[row_idx][0] or '').strip()
+                    cand_lower = cand.lower()
+                    if cand and not any(term in cand_lower for term in ('miraj', 'cineplex', 'studios', 'cinema', 'mall', 'miniplex', 'report', '* * hindi * *')):
+                        return clean_movie_name_str(cand)
+                    if cand and row_idx == 1:
+                        return clean_movie_name_str(cand)
+
+            for row in t:
+                for cell in row:
+                    if not cell:
+                        continue
+                    cell_str = str(cell).strip()
+                    m_show = re.search(r'(?:(?:1st|2nd|3rd|4th|\d+th|Morning|Evening|Noon|Matinee)\s+Show\s*,\s*)([^,(\n\r]+)', cell_str, re.IGNORECASE)
+                    if m_show:
+                        return clean_movie_name_str(m_show.group(1))
+
+    # Strategy 3: Text line search for Show rows or lines above Date / below Day
+    for page in pdf.pages[:1]:
+        text = page.extract_text() or ""
+        lines = [l.strip() for l in text.split('\n') if l.strip()]
+        for line in lines:
+            m_show = re.search(r'(?:(?:1st|2nd|3rd|4th|\d+th|Morning|Evening|Noon|Matinee)\s+Show\s*,\s*)([^,(\n\r]+)', line, re.IGNORECASE)
+            if m_show:
+                return clean_movie_name_str(m_show.group(1))
+
+            m_screen = re.search(r'^([A-Za-z0-9\s\-]+(?:\([A-Za-z0-9\s\-]+\))?)\s*\((?:SCREEN|AUDI)\s*\d+\)\s*@', line, re.IGNORECASE)
+            if m_screen:
+                return clean_movie_name_str(m_screen.group(1))
+
+        for i, line in enumerate(lines[:15]):
+            if re.search(r'^Date\s*:\s*\d{1,2}\s+[A-Za-z]+,\s*\d{4}', line, re.IGNORECASE) or re.search(r'^Date\s*:\s*\d{1,2}[\/\-]\d{1,2}[\/\-]\d{2,4}', line, re.IGNORECASE):
+                if i > 0:
+                    prev = lines[i - 1].strip()
+                    if prev and not any(k in prev.lower() for k in ['gst', 'distributor', 'week', 'studio', 'limited', 'cinemas', 'pincode', 'phone']):
+                        return clean_movie_name_str(prev)
+
+    return fallback_name
+
 def extract_date_safe(pdf) -> datetime:
     dt, _, _ = extract_all_metadata_fast(pdf)
     return dt

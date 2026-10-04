@@ -340,7 +340,7 @@
                                     <span class="input-group-text bg-transparent border-end-0 text-muted">
                                         <i data-lucide="search" style="width: 15px; height: 15px;"></i>
                                     </span>
-                                    <input type="text" class="form-control border-start-0" id="dcr-search-input" placeholder="Search by Cinema Name, PDF File Name, or Address..." onkeyup="filterDcrTable()">
+                                    <input type="text" class="form-control border-start-0" id="dcr-search-input" placeholder="Search by Cinema Name, Movie Name, PDF File Name, or Address..." onkeyup="filterDcrTable()">
                                 </div>
                             </div>
                             <div class="col-6 col-md-3">
@@ -351,6 +351,7 @@
                                     <option value="shows-desc">Net Shows: High to Low</option>
                                     <option value="admits-desc">Net Admits: High to Low</option>
                                     <option value="cinema-asc">Cinema Name: A to Z</option>
+                                    <option value="movie-asc">Movie Name: A to Z</option>
                                     <option value="file-asc">File Name: A to Z</option>
                                 </select>
                             </div>
@@ -377,6 +378,7 @@
                                     <tr>
                                         <th class="sticky-col-file text-start" rowspan="2">FILE NAME</th>
                                         <th class="sticky-col-cinema text-start" rowspan="2">CINEMA NAME</th>
+                                        <th class="text-start" rowspan="2" style="min-width: 175px;">MOVIE NAME</th>
                                         {% for code, name, color in day_configs %}
                                             <th colspan="3" class="day-group-{{ code }}">{{ name|upper }}</th>
                                         {% endfor %}
@@ -400,7 +402,7 @@
                                 <tbody id="dcr-records-tbody">
                                     {% if reports and reports|length > 0 %}
                                         {% for row in reports %}
-                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-deduction="{{ row['total_deduction']|default(0.0) }}" data-cinema="{{ row['cinema_name'] }}" data-file="{{ row['file_name'] }}">
+                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-deduction="{{ row['total_deduction']|default(0.0) }}" data-cinema="{{ row['cinema_name'] }}" data-movie="{{ row['movie_name']|default('') }}" data-file="{{ row['file_name'] }}">
                                             <!-- File Name (Sticky Col 1) -->
                                             <td class="sticky-col-file text-start fw-medium text-truncate" title="{{ row['file_name'] }}">
                                                 <div class="d-flex align-items-center gap-1">
@@ -419,6 +421,13 @@
                                                         {{ row['distributor_address'].split('\n')[0] }}
                                                     </small>
                                                 {% endif %}
+                                            </td>
+
+                                            <!-- Movie Name -->
+                                            <td class="text-start" title="{{ row['movie_name'] or 'N/A' }}">
+                                                <div class="text-truncate fw-semibold" style="max-width: 185px; color: var(--text-main);">
+                                                    {{ row["movie_name"] or '-' }}
+                                                </div>
                                             </td>
 
                                             <!-- 7 Days Iteration (3 columns each) -->
@@ -510,7 +519,7 @@
                                         {% endfor %}
                                     {% else %}
                                         <tr id="dcr-empty-row">
-                                            <td colspan="29" class="text-center py-5">
+                                            <td colspan="30" class="text-center py-5">
                                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                                     <div class="mb-3 p-3 rounded-circle" style="background-color: var(--primary-light);">
                                                         <i data-lucide="file-spreadsheet" style="width: 40px; height: 40px; color: var(--primary-color);"></i>
@@ -606,7 +615,8 @@
                 filteredRows = allRows.filter(row => {
                     const file = (row.getAttribute('data-file') || '').toLowerCase();
                     const cinema = (row.getAttribute('data-cinema') || '').toLowerCase();
-                    return file.includes(query) || cinema.includes(query);
+                    const movie = (row.getAttribute('data-movie') || '').toLowerCase();
+                    return file.includes(query) || cinema.includes(query) || movie.includes(query);
                 });
 
                 allRows.forEach(r => r.style.display = 'none');
@@ -627,6 +637,8 @@
                     const admitsB = parseInt(b.getAttribute('data-admits') || 0, 10);
                     const cinA = (a.getAttribute('data-cinema') || '').toLowerCase();
                     const cinB = (b.getAttribute('data-cinema') || '').toLowerCase();
+                    const movieA = (a.getAttribute('data-movie') || '').toLowerCase();
+                    const movieB = (b.getAttribute('data-movie') || '').toLowerCase();
                     const fileA = (a.getAttribute('data-file') || '').toLowerCase();
                     const fileB = (b.getAttribute('data-file') || '').toLowerCase();
 
@@ -635,6 +647,7 @@
                     if (sortType === 'shows-desc') return showsB - showsA;
                     if (sortType === 'admits-desc') return admitsB - admitsA;
                     if (sortType === 'cinema-asc') return cinA.localeCompare(cinB);
+                    if (sortType === 'movie-asc') return movieA.localeCompare(movieB);
                     if (sortType === 'file-asc') return fileA.localeCompare(fileB);
                     return 0;
                 });
@@ -734,13 +747,17 @@
                 const modalBody = document.getElementById('modal-body-content');
                 modalBody.innerHTML = `
                     <div class="row g-3 mb-4">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <label class="text-muted small text-uppercase fw-semibold">Cinema / Theatre</label>
                             <div class="fw-bold fs-6">${report.cinema_name || 'Unknown'}</div>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
+                            <label class="text-muted small text-uppercase fw-semibold">Movie Name</label>
+                            <div class="fw-bold fs-6 text-primary">${report.movie_name || 'N/A'}</div>
+                        </div>
+                        <div class="col-md-4">
                             <label class="text-muted small text-uppercase fw-semibold">Grand Total Collection</label>
-                            <div class="fw-bold fs-5 text-primary">₹ ${Number(report.grand_total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
+                            <div class="fw-bold fs-5 text-success">₹ ${Number(report.grand_total || 0).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</div>
                         </div>
                         <div class="col-6 col-md-3">
                             <label class="text-muted small text-uppercase fw-semibold">Net Shows</label>
