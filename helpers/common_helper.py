@@ -446,22 +446,26 @@ def extract_all_metadata_fast(pdf, fallback_name: str = "Unknown Cinema") -> Tup
 def extract_total_deduction(pdf) -> float:
     """
     Extracts the deduction amount from the PDF document.
-    Supports:
-      - Structured table cells with stacked header/value (e.g. 'Deduction\\n975.00')
-      - Dedicated vertical/horizontal deduction cells in tables
-      - Same-line text (e.g. 'deduction  : 1,250.00')
-      - Next-line text (e.g. 'deduction\\n          1,250.00')
-    Searches tables first for high precision, then line text, and regex fallbacks.
+    Ensures that when 'Total Nett' and 'Total Deductions' appear together,
+    only the amount specifically belonging to Total Deductions is captured.
     """
+    # Priority 1: Check text on all pages for explicit 'Total Deductions? : ...'
+    for page in pdf.pages:
+        text = page.extract_text() or ""
+        m = re.search(r'Total\s+Deductions?\s*[:\-]?\s*(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', text, re.IGNORECASE)
+        if m:
+            try:
+                return round(float(m.group(1).replace(',', '')), 2)
+            except ValueError:
+                pass
+
+    # Priority 2: Structured Tables
     patterns_to_check = [
-        # Pass 1: Prioritize explicit 'total deduction' / 'total deductions'
-        (r'\btotal\s+deductions?\b', r'total\s+deductions?\s*[:\-]?', "total deduction"),
-        # Pass 2: Standalone 'deduction' / 'deductions'
-        (r'\bdeductions?\b', r'\bdeductions?\b\s*[:\-]?', "deduction")
+        (r'\btotal\s+deductions?\b', "total deduction"),
+        (r'\bdeductions?\b', "deduction")
     ]
 
-    # Layer 1: Structured Tables First (accurately captures 'Deduction\n975.00', vertical cells, or row pairs)
-    for word_regex, split_regex, keyword in patterns_to_check:
+    for word_regex, keyword in patterns_to_check:
         for page in pdf.pages:
             try:
                 tables = page.extract_tables() or []
@@ -478,97 +482,68 @@ def extract_total_deduction(pdf) -> float:
                             continue
                         c_clean = str(cell).strip()
                         if re.search(word_regex, c_clean, re.IGNORECASE):
-                            # Case A: Inside same cell (e.g. 'Deduction\n975.00' or 'Total Deduction : 975.00')
-                            lines_in_cell = [l.strip() for l in c_clean.split('\n') if l.strip()]
-                            for l in lines_in_cell:
-                                if re.fullmatch(r'(?:total\s+)?deductions?\s*[:\-]?', l, re.IGNORECASE):
-                                    continue
-                                num_m = re.search(r'([0-9,]+(?:\.[0-9]{1,2})?)', l)
-                                if num_m:
-                                    try:
-                                        return round(float(num_m.group(1).replace(',', '')), 2)
-                                    except ValueError:
-                                        pass
+                            # A: Direct regex on cell text for 'Total Deductions? : ...' or 'Deduction : ...'
+                            m = re.search(rf'{word_regex}\s*[:\-]?\s*(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', c_clean, re.IGNORECASE)
+                            if m:
+                                try:
+                                    return round(float(m.group(1).replace(',', '')), 2)
+                                except ValueError:
+                                    pass
 
-                            # Case B: In cell directly below in next row (same column)
-                            if r_idx + 1 < len(t):
-                                next_row = t[r_idx + 1]
-                                if c_idx < len(next_row) and next_row[c_idx]:
-                                    next_cell = str(next_row[c_idx]).strip()
-                                    num_m = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', next_cell)
+                            # B: Stacked lines within cell (e.g. 'Deduction\n600.00')
+                            lines_in_cell = [l.strip() for l in c_clean.split('\n') if l.strip()]
+                            for l_idx, l in enumerate(lines_in_cell):
+                                if re.search(word_regex, l, re.IGNORECASE) and l_idx + 1 < len(lines_in_cell):
+                                    next_l = lines_in_cell[l_idx + 1]
+                                    num_m = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)$', next_l)
                                     if num_m:
                                         try:
                                             return round(float(num_m.group(1).replace(',', '')), 2)
                                         except ValueError:
                                             pass
 
-                            # Case C: In adjacent cell to the right (same row)
+                            # C: In cell directly below in next row (same column)
+                            if r_idx + 1 < len(t):
+                                next_row = t[r_idx + 1]
+                                if c_idx < len(next_row) and next_row[c_idx]:
+                                    next_cell = str(next_row[c_idx]).strip()
+                                    num_m = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)$', next_cell)
+                                    if num_m:
+                                        try:
+                                            return round(float(num_m.group(1).replace(',', '')), 2)
+                                        except ValueError:
+                                            pass
+
+                            # D: In adjacent cell to the right
                             if c_idx + 1 < len(row) and row[c_idx + 1]:
                                 adj_cell = str(row[c_idx + 1]).strip()
-                                num_m = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', adj_cell)
-                                if num_m and not re.search(r'[a-zA-Z]{3,}', adj_cell):
+                                num_m = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)$', adj_cell)
+                                if num_m:
                                     try:
                                         return round(float(num_m.group(1).replace(',', '')), 2)
                                     except ValueError:
                                         pass
 
-                            # Case D: Row ends with the total deduction amount (e.g. ['Total Deduction', '', '', '975.00'])
+                            # E: End of row
                             for end_cell in reversed(row[c_idx+1:]):
                                 if not end_cell:
                                     continue
                                 end_clean = str(end_cell).strip()
-                                num_m = re.search(r'([0-9,]+(?:\.[0-9]{1,2})?)', end_clean)
-                                if num_m and not re.search(r'(?:total\s+)?deductions?|weekly\s+nett|final|bor|tax', end_clean, re.IGNORECASE):
+                                num_m = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)$', end_clean)
+                                if num_m:
                                     try:
                                         return round(float(num_m.group(1).replace(',', '')), 2)
                                     except ValueError:
                                         pass
 
-    # Layer 2: Line-by-line text search
-    for word_regex, split_regex, keyword in patterns_to_check:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            if not text:
+    # Priority 3: Fallback on line text
+    for page in pdf.pages:
+        text = page.extract_text() or ""
+        for line in text.split('\n'):
+            line_clean = line.strip()
+            if 'total nett' in line_clean.lower() and 'total deduction' not in line_clean.lower():
                 continue
-
-            lines = text.split('\n')
-            for idx, line in enumerate(lines):
-                l_clean = line.strip()
-                l_lower = l_clean.lower()
-                if keyword in l_lower and re.search(word_regex, l_lower):
-                    # Check same line (avoid table headers with multiple category labels like 'I.N.R. : 0.00 Show Tax')
-                    if not re.search(r'i\.n\.r|show\s+tax|pub\s*\.?\s*exp|others', l_clean, re.IGNORECASE):
-                        parts = re.split(split_regex, l_clean, flags=re.IGNORECASE)
-                        if len(parts) > 1 and parts[1].strip():
-                            rem = parts[1].strip()
-                            num_match = re.search(r'([0-9,]+(?:\.[0-9]{1,2})?)', rem)
-                            if num_match:
-                                try:
-                                    return round(float(num_match.group(1).replace(',', '')), 2)
-                                except ValueError:
-                                    pass
-
-                    # Next line check (handles 'deduction\n 1,250.00')
-                    for offset in range(1, 4):
-                        if idx + offset < len(lines):
-                            next_line = lines[idx + offset].strip()
-                            if not next_line:
-                                continue
-                            num_match = re.search(r'^(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', next_line, re.IGNORECASE)
-                            if num_match:
-                                try:
-                                    return round(float(num_match.group(1).replace(',', '')), 2)
-                                except ValueError:
-                                    pass
-                            break
-
-    # Layer 3: Multiline fallback regex on page text
-    for word_regex, split_regex, keyword in patterns_to_check:
-        for page in pdf.pages:
-            text = page.extract_text() or ""
-            if not text:
-                continue
-            m = re.search(rf'{word_regex}\s*[:\-]?\s*(?:\r?\n\s*)?(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', text, re.IGNORECASE)
+            m = re.search(r'(?:total\s+)?deductions?\s*[:\-]\s*(?:(?:Rs\.?|INR|[^\x00-\x7F])\s*)?([0-9,]+(?:\.[0-9]{1,2})?)', line_clean, re.IGNORECASE)
             if m:
                 try:
                     return round(float(m.group(1).replace(',', '')), 2)
