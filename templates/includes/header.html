@@ -30,6 +30,11 @@
                 </li>
                 {% if current_user and current_user.get('role') == 'super_admin' %}
                 <li>
+                    <a class="dropdown-item py-2" href="{{BASE_URL + '/cinemas'}}">
+                        <i data-lucide="clapperboard" class="me-2" style="width: 16px;"></i> Cinema Master
+                    </a>
+                </li>
+                <li>
                     <a class="dropdown-item py-2" href="{{BASE_URL + '/users'}}">
                         <i data-lucide="users" class="me-2" style="width: 16px;"></i> User Management
                     </a>

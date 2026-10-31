@@ -115,6 +115,15 @@ async def downloadExcel(request: Request):
     ws["B1"] = "CINEMA NAME"
     ws["C1"] = "MOVIE NAME"
 
+    # Cinema Details (Appended after Action/Totals)
+    ws.merge_cells("AC1:AC2"); ws["AC1"] = "LOCATION"
+    ws.merge_cells("AD1:AD2"); ws["AD1"] = "STATE"
+    ws.merge_cells("AE1:AE2"); ws["AE1"] = "SIRCUIT"
+    ws.merge_cells("AF1:AF2"); ws["AF1"] = "CONTOLLER"
+    ws.merge_cells("AG1:AG2"); ws["AG1"] = "GST NUMBER"
+    ws.merge_cells("AH1:AH2"); ws["AH1"] = "PAN NUMBER"
+    ws.merge_cells("AI1:AI2"); ws["AI1"] = "ADDRESS"
+
     header_groups = [
         ("FRIDAY", "D", "F"),
         ("SATURDAY", "G", "I"),
@@ -190,7 +199,15 @@ async def downloadExcel(request: Request):
             row.get("net_show", 0),
             row.get("net_adm", 0),
             row.get("grand_total", 0),
-            row.get("total_deduction", 0.0)
+            row.get("total_deduction", 0.0),
+
+            row.get("location", ""),
+            row.get("state", ""),
+            row.get("sircuit", ""),
+            row.get("controller", ""),
+            row.get("gst", ""),
+            row.get("pan_number", ""),
+            row.get("address", "")
 
         ])
 
@@ -288,6 +305,13 @@ async def downloadExcel(request: Request):
     ws.column_dimensions["Z"].width = max(ws.column_dimensions["Z"].width or 0, 13)
     ws.column_dimensions["AA"].width = max(ws.column_dimensions["AA"].width or 0, 20)
     ws.column_dimensions["AB"].width = max(ws.column_dimensions["AB"].width or 0, 18)
+    ws.column_dimensions["AC"].width = max(ws.column_dimensions["AC"].width or 0, 18)
+    ws.column_dimensions["AD"].width = max(ws.column_dimensions["AD"].width or 0, 18)
+    ws.column_dimensions["AE"].width = max(ws.column_dimensions["AE"].width or 0, 16)
+    ws.column_dimensions["AF"].width = max(ws.column_dimensions["AF"].width or 0, 22)
+    ws.column_dimensions["AG"].width = max(ws.column_dimensions["AG"].width or 0, 20)
+    ws.column_dimensions["AH"].width = max(ws.column_dimensions["AH"].width or 0, 16)
+    ws.column_dimensions["AI"].width = max(ws.column_dimensions["AI"].width or 0, 35)
 
     # Freeze Header
     ws.freeze_panes = "D3"

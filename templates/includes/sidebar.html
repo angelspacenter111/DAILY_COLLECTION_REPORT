@@ -17,6 +17,10 @@
             <i data-lucide="table"></i>
             <span>DCR Extracter</span>
         </a>
+        <a href="{{BASE_URL + '/cinemas'}}" class="sidebar-nav-link">
+            <i data-lucide="clapperboard"></i>
+            <span>Cinema Master</span>
+        </a>
         {% if current_user and current_user.get('role') == 'super_admin' %}
         <a href="{{BASE_URL + '/users'}}" class="sidebar-nav-link">
             <i data-lucide="users"></i>

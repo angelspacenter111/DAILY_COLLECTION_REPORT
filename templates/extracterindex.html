@@ -388,6 +388,14 @@
                                         {% endfor %}
                                         <th colspan="4" class="day-group-total">TOTAL</th>
                                         <th rowspan="2" style="min-width: 75px;">ACTIONS</th>
+                                        <!-- Cinema Information Columns (Added after Action column) -->
+                                        <th rowspan="2" class="text-start" style="min-width: 120px;">LOCATION</th>
+                                        <th rowspan="2" class="text-start" style="min-width: 120px;">STATE</th>
+                                        <th rowspan="2" class="text-start" style="min-width: 110px;">SIRCUIT</th>
+                                        <th rowspan="2" class="text-start" style="min-width: 130px;">CONTOLLER</th>
+                                        <th rowspan="2" class="text-start" style="min-width: 145px;">GST NUMBER</th>
+                                        <th rowspan="2" class="text-start" style="min-width: 125px;">PAN NUMBER</th>
+                                        <th rowspan="2" class="text-start" style="min-width: 220px;">ADDRESS</th>
                                     </tr>
 
                                     <!-- Header Row 2: Sub-headers -->
@@ -406,7 +414,7 @@
                                 <tbody id="dcr-records-tbody">
                                     {% if reports and reports|length > 0 %}
                                         {% for row in reports %}
-                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-deduction="{{ row['total_deduction']|default(0.0) }}" data-cinema="{{ row['cinema_name'] }}" data-movie="{{ row['movie_name']|default('') }}" data-file="{{ row['file_name'] }}">
+                                        <tr class="dcr-data-row" data-id="{{ row['id'] }}" data-net="{{ row['grand_total'] }}" data-shows="{{ row['net_show'] }}" data-admits="{{ row['net_adm'] }}" data-deduction="{{ row['total_deduction']|default(0.0) }}" data-cinema="{{ row['cinema_name'] }}" data-movie="{{ row['movie_name']|default('') }}" data-file="{{ row['file_name'] }}" data-location="{{ row.get('location', '') }}" data-state="{{ row.get('state', '') }}" data-sircuit="{{ row.get('sircuit', '') }}" data-controller="{{ row.get('controller', '') }}" data-gst="{{ row.get('gst', '') }}" data-pan="{{ row.get('pan_number', '') }}" data-address="{{ row.get('address', '') }}">
                                             <!-- File Name (Sticky Col 1) -->
                                             <td class="sticky-col-file text-start fw-medium text-truncate" title="{{ row['file_name'] }}">
                                                 <div class="d-flex align-items-center gap-1">
@@ -524,11 +532,34 @@
                                                     {% endif %}
                                                 </div>
                                             </td>
+
+                                            <!-- Cinema Master Details (Rendered after Actions column) -->
+                                            <td class="text-start text-truncate" style="max-width: 140px;" title="{{ row.get('location', '') }}">
+                                                <span class="small">{{ row.get("location") or '-' }}</span>
+                                            </td>
+                                            <td class="text-start text-truncate" style="max-width: 140px;" title="{{ row.get('state', '') }}">
+                                                <span class="small">{{ row.get("state") or '-' }}</span>
+                                            </td>
+                                            <td class="text-start text-truncate" style="max-width: 130px;" title="{{ row.get('sircuit', '') }}">
+                                                <span class="small">{{ row.get("sircuit") or '-' }}</span>
+                                            </td>
+                                            <td class="text-start text-truncate" style="max-width: 150px;" title="{{ row.get('controller', '') }}">
+                                                <span class="small">{{ row.get("controller") or '-' }}</span>
+                                            </td>
+                                            <td class="text-start text-truncate font-monospace" style="max-width: 155px;" title="{{ row.get('gst', '') }}">
+                                                <span class="small">{{ row.get("gst") or '-' }}</span>
+                                            </td>
+                                            <td class="text-start text-truncate font-monospace" style="max-width: 135px;" title="{{ row.get('pan_number', '') }}">
+                                                <span class="small">{{ row.get("pan_number") or '-' }}</span>
+                                            </td>
+                                            <td class="text-start text-truncate" style="max-width: 250px;" title="{{ row.get('address', '') }}">
+                                                <span class="small text-muted">{{ row.get("address") or '-' }}</span>
+                                            </td>
                                         </tr>
                                         {% endfor %}
                                     {% else %}
                                         <tr id="dcr-empty-row">
-                                            <td colspan="30" class="text-center py-5">
+                                            <td colspan="37" class="text-center py-5">
                                                 <div class="d-flex flex-column align-items-center justify-content-center">
                                                     <div class="mb-3 p-3 rounded-circle" style="background-color: var(--primary-light);">
                                                         <i data-lucide="file-spreadsheet" style="width: 40px; height: 40px; color: var(--primary-color);"></i>
@@ -629,7 +660,16 @@
                     const file = (row.getAttribute('data-file') || '').toLowerCase();
                     const cinema = (row.getAttribute('data-cinema') || '').toLowerCase();
                     const movie = (row.getAttribute('data-movie') || '').toLowerCase();
-                    return file.includes(query) || cinema.includes(query) || movie.includes(query);
+                    const location = (row.getAttribute('data-location') || '').toLowerCase();
+                    const state = (row.getAttribute('data-state') || '').toLowerCase();
+                    const sircuit = (row.getAttribute('data-sircuit') || '').toLowerCase();
+                    const controller = (row.getAttribute('data-controller') || '').toLowerCase();
+                    const gst = (row.getAttribute('data-gst') || '').toLowerCase();
+                    const pan = (row.getAttribute('data-pan') || '').toLowerCase();
+                    const address = (row.getAttribute('data-address') || '').toLowerCase();
+                    return file.includes(query) || cinema.includes(query) || movie.includes(query) ||
+                           location.includes(query) || state.includes(query) || sircuit.includes(query) ||
+                           controller.includes(query) || gst.includes(query) || pan.includes(query) || address.includes(query);
                 });
 
                 allRows.forEach(r => r.style.display = 'none');
@@ -792,6 +832,37 @@
                         <div class="col-12 col-md-9">
                             <label class="text-muted small text-uppercase fw-semibold">Distributor / Theatre Address</label>
                             <div class="p-2 rounded bg-light border text-secondary small" style="white-space: pre-line;">${report.distributor_address || 'No address text extracted'}</div>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <div class="p-3 rounded border bg-light">
+                                <h6 class="fw-bold mb-2 text-primary d-flex align-items-center gap-1" style="font-size: 0.85rem;">
+                                    <i data-lucide="clapperboard" style="width: 14px; height: 14px;"></i>
+                                    <span>Cinema Master Details</span>
+                                </h6>
+                                <div class="row g-2 small">
+                                    <div class="col-sm-6 col-md-4">
+                                        <span class="text-muted">Location:</span> <span class="fw-semibold">${report.location || '-'}</span>
+                                    </div>
+                                    <div class="col-sm-6 col-md-4">
+                                        <span class="text-muted">State:</span> <span class="fw-semibold">${report.state || '-'}</span>
+                                    </div>
+                                    <div class="col-sm-6 col-md-4">
+                                        <span class="text-muted">Sircuit:</span> <span class="fw-semibold">${report.sircuit || '-'}</span>
+                                    </div>
+                                    <div class="col-sm-6 col-md-4">
+                                        <span class="text-muted">Controller:</span> <span class="fw-semibold">${report.controller || '-'}</span>
+                                    </div>
+                                    <div class="col-sm-6 col-md-4">
+                                        <span class="text-muted">GST Number:</span> <span class="fw-semibold font-monospace">${report.gst || '-'}</span>
+                                    </div>
+                                    <div class="col-sm-6 col-md-4">
+                                        <span class="text-muted">PAN Number:</span> <span class="fw-semibold font-monospace">${report.pan_number || '-'}</span>
+                                    </div>
+                                    <div class="col-12">
+                                        <span class="text-muted">Cinema Address:</span> <span class="fw-semibold">${report.address || '-'}</span>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
 

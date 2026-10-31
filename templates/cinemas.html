@@ -1,0 +1,915 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Cinema Master | First Film Studios</title>
+    {% include "includes/css.html" %}
+    <style>
+        .cinema-icon-badge {
+            width: 40px;
+            height: 40px;
+            border-radius: 10px;
+            background: linear-gradient(135deg, rgba(99, 102, 241, 0.12), rgba(168, 85, 247, 0.12));
+            color: #6366f1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+        .report-badge {
+            font-size: 0.76rem;
+            font-weight: 600;
+            padding: 0.35rem 0.65rem;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+        }
+        .report-badge-active {
+            background-color: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .report-badge-zero {
+            background-color: #f1f5f9;
+            color: #64748b;
+            border: 1px solid #e2e8f0;
+        }
+        .kpi-card-cinema {
+            background: #ffffff;
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            padding: 1.15rem 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kpi-card-cinema .kpi-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .kpi-card-cinema .kpi-value {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .kpi-card-cinema .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* Beautiful Modern Action Buttons */
+        .btn-action-view {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.36rem 0.72rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px rgba(37, 99, 235, 0.06);
+            text-decoration: none;
+        }
+        .btn-action-view:hover {
+            background: #2563eb;
+            color: #ffffff !important;
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-edit {
+            background: #f5f3ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.36rem 0.72rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px rgba(124, 58, 237, 0.06);
+            text-decoration: none;
+        }
+        .btn-action-edit:hover {
+            background: #7c3aed;
+            color: #ffffff !important;
+            border-color: #7c3aed;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            font-weight: 600;
+            font-size: 0.78rem;
+            padding: 0.36rem 0.62rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 1px 2px rgba(220, 38, 38, 0.06);
+        }
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #ffffff !important;
+            border-color: #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-locked {
+            background: #f8fafc;
+            color: #94a3b8;
+            border: 1px solid #e2e8f0;
+            font-size: 0.78rem;
+            padding: 0.36rem 0.62rem;
+            border-radius: 8px;
+            display: inline-flex;
+            align-items: center;
+            cursor: not-allowed;
+            opacity: 0.75;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        {% include "includes/sidebar.html" %}
+        <main class="app-content">
+            {% include "includes/header.html" %}
+            <section class="page-container" id="cinema-master-wrapper">
+                <!-- Page Header with Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">Cinema Master</h1>
+                        <p class="text-muted mb-0">Manage registered cinema halls &amp; theatres. Cinemas are created exclusively via Excel bulk upload. Modifying names dynamically syncs across all linked DCR reports.</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Excel Export Button -->
+                        <a href="/api/cinemas/download-excel" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-2 shadow-sm px-3 py-2" title="Download Cinemas in Excel (.xlsx)">
+                            <i data-lucide="file-spreadsheet" style="width: 16px; height: 16px;"></i>
+                            <span>Export Excel</span>
+                        </a>
+
+                        {% if current_user and current_user.get('role') == 'super_admin' %}
+                        <!-- Bulk Upload Button (Sole method for creating cinemas) -->
+                        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm px-3 py-2" data-bs-toggle="modal" data-bs-target="#bulkUploadModal" title="Bulk Upload Cinemas from Excel">
+                            <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i>
+                            <span>Bulk Upload Excel</span>
+                        </button>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- KPI Summary Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="kpi-card-cinema">
+                            <div>
+                                <div class="kpi-label">Total Registered Cinemas</div>
+                                <div class="kpi-value" id="kpi-total-cinemas">{{ stats.total_cinemas }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(99, 102, 241, 0.12); color: #6366f1;">
+                                <i data-lucide="clapperboard" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="kpi-card-cinema">
+                            <div>
+                                <div class="kpi-label">Cinemas with Active DCR</div>
+                                <div class="kpi-value" id="kpi-active-cinemas">{{ stats.cinemas_with_reports }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                                <i data-lucide="check-circle" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-4">
+                        <div class="kpi-card-cinema">
+                            <div>
+                                <div class="kpi-label">Total Linked DCR Reports</div>
+                                <div class="kpi-value" id="kpi-total-reports">{{ stats.total_linked_reports }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                                <i data-lucide="file-text" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Cinema Table Card -->
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="h5 fw-bold mb-0">Registered Cinemas</h3>
+                            <span class="badge bg-primary-subtle text-primary px-3 py-1 fs-6 rounded-pill" id="badge-cinema-count">
+                                {{ cinemas|length }} Hall(s) Total
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="input-group input-group-sm" style="width: 280px;">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i data-lucide="search" style="width: 14px; height: 14px; color: #94a3b8;"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="cinema-search-input" placeholder="Search cinema, address, city..." oninput="filterCinemasTable()">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-custom">
+                        <table class="table table-custom align-middle mb-0">
+                            <thead>
+                                <tr>
+                                    <th style="width: 60px;">#</th>
+                                    <th>Cinema / Theatre Name</th>
+                                    <th style="width: 160px;">Linked Reports</th>
+                                    <th style="width: 160px;">Added On</th>
+                                    <th style="width: 160px;">Last Updated</th>
+                                    <th class="text-center" style="width: 180px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="cinema-table-body">
+                                {% if cinemas and cinemas|length > 0 %}
+                                    {% for c in cinemas %}
+                                    <tr id="cinema-row-{{ c['id'] }}" 
+                                        class="cinema-table-row" 
+                                        data-name="{{ c['cinema_name']|lower }}"
+                                        data-name-raw="{{ c['cinema_name'] }}"
+                                        data-address="{{ c.get('address', '') }}"
+                                        data-location="{{ c.get('location', '') }}"
+                                        data-state="{{ c.get('state', '') }}"
+                                        data-sircuit="{{ c.get('sircuit', '') }}"
+                                        data-controller="{{ c.get('controller', '') }}"
+                                        data-gst="{{ c.get('gst', '') }}"
+                                        data-pan="{{ c.get('pan_number', '') }}"
+                                        data-reports="{{ c.get('report_count', 0) }}"
+                                        data-created="{{ c.get('created_at_formatted', 'N/A') }}"
+                                        data-updated="{{ c.get('updated_at_formatted', 'N/A') }}">
+                                        <td class="text-muted small fw-semibold">{{ loop.index }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-3">
+                                                <div class="cinema-icon-badge">
+                                                    <i data-lucide="clapperboard" style="width: 18px; height: 18px;"></i>
+                                                </div>
+                                                <div>
+                                                    <div class="fw-bold fs-6 text-dark cinema-name-text" id="cinema-name-display-{{ c['id'] }}">
+                                                        {{ c['cinema_name'] }}
+                                                    </div>
+                                                    <div class="text-muted small">
+                                                        ID: <code class="text-muted" style="font-size: 0.75rem;">{{ c['id'] }}</code>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            {% if c.get('report_count', 0) > 0 %}
+                                            <span class="report-badge report-badge-active">
+                                                <i data-lucide="check" style="width: 12px; height: 12px;"></i>
+                                                <span id="badge-report-count-{{ c['id'] }}">{{ c.get('report_count') }} Report(s) Linked</span>
+                                            </span>
+                                            {% else %}
+                                            <span class="report-badge report-badge-zero">
+                                                <i data-lucide="clock" style="width: 12px; height: 12px;"></i>
+                                                <span id="badge-report-count-{{ c['id'] }}">0 Reports</span>
+                                            </span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="small text-muted">{{ c.get('created_at_formatted', 'N/A') }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small text-muted" id="cinema-updated-{{ c['id'] }}">{{ c.get('updated_at_formatted', 'N/A') }}</div>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-2">
+                                                <!-- Beautiful View Details Button -->
+                                                <button type="button" class="btn-action-view" onclick="openViewCinemaModal('{{ c['id'] }}')" title="View Cinema Details">
+                                                    <i data-lucide="eye" style="width: 14px; height: 14px;"></i>
+                                                    <span>View</span>
+                                                </button>
+                                                {% if current_user and current_user.get('role') == 'super_admin' %}
+                                                <!-- Beautiful Edit Button -->
+                                                <button type="button" class="btn-action-edit" onclick="openEditCinemaModal('{{ c['id'] }}')" title="Edit Cinema Details">
+                                                    <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                                                    <span>Edit</span>
+                                                </button>
+                                                {% if c.get('report_count', 0) == 0 %}
+                                                <button type="button" class="btn-action-delete" onclick="deleteCinema('{{ c['id'] }}', '{{ c['cinema_name']|replace('\'', '\\\'') }}', {{ c.get('report_count', 0) }})" title="Delete Cinema">
+                                                    <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                                {% else %}
+                                                <button type="button" class="btn-action-locked" onclick="alert('This cinema cannot be deleted because {{ c.get('report_count') }} DCR report(s) are linked to it.')" title="Cannot delete: linked reports exist">
+                                                    <i data-lucide="lock" style="width: 14px; height: 14px;"></i>
+                                                </button>
+                                                {% endif %}
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr id="empty-cinemas-row">
+                                        <td colspan="6" class="text-center py-5 text-muted">
+                                            <i data-lucide="clapperboard" class="d-block mx-auto mb-2 opacity-50" style="width: 40px; height: 40px;"></i>
+                                            <p class="mb-0 fw-semibold">No cinemas registered yet in Cinema Master.</p>
+                                            <small class="text-muted">Cinemas will be automatically added when you upload DCR PDF files or use Bulk Upload.</small>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- View Cinema Details Modal -->
+    <div class="modal fade" id="viewCinemaModal" tabindex="-1" aria-labelledby="viewCinemaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom shadow-lg">
+                <div class="modal-header border-color">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="cinema-icon-badge" style="width: 34px; height: 34px;">
+                            <i data-lucide="info" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="viewCinemaModalLabel">Cinema Details</h5>
+                            <small class="text-muted">Complete master record and tax identifiers</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Cinema Header Card in Modal -->
+                    <div class="p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: linear-gradient(135deg, rgba(99, 102, 241, 0.08), rgba(168, 85, 247, 0.08)); border: 1px solid rgba(99, 102, 241, 0.2);">
+                        <div>
+                            <h4 class="fw-bold mb-1 text-dark" id="view-cinema-name">-</h4>
+                            <div class="text-muted small">
+                                Database ID: <code class="text-primary fw-semibold" id="view-cinema-id">-</code>
+                            </div>
+                        </div>
+                        <span class="badge bg-primary px-3 py-2 fs-6 rounded-pill" id="view-cinema-reports">
+                            0 Report(s) Linked
+                        </span>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="row g-3">
+                        <!-- Full Address -->
+                        <div class="col-12">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="map-pinned" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Address
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-address" style="white-space: pre-wrap;">-</div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="map-pin" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Location
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-location">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="map" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> State
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-state">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="compass" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Sircuit
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-sircuit">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="user-check" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Contoller
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-controller">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="file-text" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> GST Number
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-gst">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="credit-card" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> PAN Number
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-pan">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="calendar" class="me-1" style="width: 14px; height: 14px; color: #64748b;"></i> Added On
+                                </div>
+                                <div class="fw-semibold text-secondary" id="view-cinema-created">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px; color: #64748b;"></i> Last Updated
+                                </div>
+                                <div class="fw-semibold text-secondary" id="view-cinema-updated">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-color">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    {% if current_user and current_user.get('role') == 'super_admin' %}
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" id="view-modal-edit-btn">
+                        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                        <span>Edit Cinema Details</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Cinema Modal -->
+    <div class="modal fade" id="editCinemaModal" tabindex="-1" aria-labelledby="editCinemaModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom shadow-lg">
+                <form id="edit-cinema-form" onsubmit="handleUpdateCinema(event)">
+                    <div class="modal-header border-color">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="cinema-icon-badge" style="width: 32px; height: 32px;">
+                                <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <h5 class="modal-title fw-bold mb-0" id="editCinemaModalLabel">Edit Cinema Details</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-danger d-none py-2 px-3 small" id="modal-edit-error-alert"></div>
+                        <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3">
+                            <i data-lucide="info" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                            <span>Cinema ID mapping ensures updating this cinema automatically reflects across all linked DCR reports.</span>
+                        </div>
+                        <input type="hidden" id="edit-cinema-id" name="cinema_id" value="">
+                        
+                        <!-- Cinema Name -->
+                        <div class="mb-3">
+                            <label for="edit-cinema-name" class="form-label fw-semibold">Cinema / Theatre Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="edit-cinema-name" name="cinema_name" required placeholder="Enter cinema name" autocomplete="off">
+                        </div>
+
+                        <!-- Address Textbox -->
+                        <div class="mb-3">
+                            <label for="edit-cinema-address" class="form-label fw-semibold">Address</label>
+                            <textarea class="form-control" id="edit-cinema-address" name="address" rows="2" placeholder="Enter full street, mall, or theater address" autocomplete="off"></textarea>
+                        </div>
+
+                        <!-- Location & State -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="edit-cinema-location" class="form-label fw-semibold">Location</label>
+                                <input type="text" class="form-control" id="edit-cinema-location" name="location" placeholder="e.g. Viman Nagar, Pune" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-cinema-state" class="form-label fw-semibold">State</label>
+                                <input type="text" class="form-control" id="edit-cinema-state" name="state" placeholder="e.g. Maharashtra" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Sircuit & Contoller -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="edit-cinema-sircuit" class="form-label fw-semibold">Sircuit</label>
+                                <input type="text" class="form-control" id="edit-cinema-sircuit" name="sircuit" placeholder="e.g. Bombay, CP, CI, Delhi-UP" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-cinema-controller" class="form-label fw-semibold">Contoller</label>
+                                <input type="text" class="form-control" id="edit-cinema-controller" name="controller" placeholder="Controller Name / In-charge" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- GST & PAN Number -->
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-6">
+                                <label for="edit-cinema-gst" class="form-label fw-semibold">GST</label>
+                                <input type="text" class="form-control" id="edit-cinema-gst" name="gst" placeholder="e.g. 27AAAAA0000A1Z5" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-cinema-pan" class="form-label fw-semibold">PAN Number</label>
+                                <input type="text" class="form-control" id="edit-cinema-pan" name="pan_number" placeholder="e.g. ABCDE1234F" autocomplete="off">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-color">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" id="save-edit-cinema-btn">
+                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                            <span>Update Cinema Details</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Upload Modal -->
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom shadow-lg">
+                <form id="bulk-upload-cinema-form" onsubmit="handleBulkUpload(event)">
+                    <div class="modal-header border-color">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="cinema-icon-badge" style="width: 34px; height: 34px; background: rgba(59, 130, 246, 0.12); color: #2563eb;">
+                                <i data-lucide="upload-cloud" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold mb-0" id="bulkUploadModalLabel">Bulk Upload Cinemas</h5>
+                                <small class="text-muted">Import multiple cinemas at once from an Excel or CSV file</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-danger d-none py-2 px-3 small" id="modal-bulk-error-alert"></div>
+                        
+                        <!-- Duplicate Skip Notice -->
+                        <div class="alert alert-info py-2 px-3 small d-flex align-items-start gap-2 mb-3">
+                            <i data-lucide="shield-check" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                            <div>
+                                <strong>Duplicate Skip Protection:</strong> Agar koi cinema name pehle se database me maujood hai, toh wo record automatically skip ho jayega. Sirf <strong>naya cinema</strong> hi create hoga.
+                            </div>
+                        </div>
+
+                        <!-- Template Download Box -->
+                        <div class="p-3 mb-3 rounded-3 bg-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <div class="fw-semibold text-dark small">Sample Excel Template</div>
+                                <div class="text-muted" style="font-size: 0.76rem;">Download the pre-formatted template with all required columns.</div>
+                            </div>
+                            <a href="/api/cinemas/download-template" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm">
+                                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                                <span>Download Template (.xlsx)</span>
+                            </a>
+                        </div>
+
+                        <!-- File Input -->
+                        <div class="mb-3">
+                            <label for="bulk-upload-file" class="form-label fw-semibold">Select Excel or CSV File <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="bulk-upload-file" name="file" accept=".xlsx, .xls, .csv" required>
+                            <div class="form-text small">Supported formats: .xlsx, .xls, .csv</div>
+                        </div>
+
+                        <!-- Results container (hidden until processed) -->
+                        <div id="bulk-upload-results" class="d-none mt-3 p-3 rounded-3 bg-light border">
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                <span class="badge bg-success-subtle text-success fs-6 px-3 py-1 rounded-pill" id="bulk-result-created-badge">
+                                    0 Created
+                                </span>
+                                <span class="badge bg-secondary-subtle text-secondary fs-6 px-3 py-1 rounded-pill" id="bulk-result-skipped-badge">
+                                    0 Skipped
+                                </span>
+                            </div>
+                            <div class="small text-muted" id="bulk-result-summary"></div>
+                            <div class="small mt-2 d-none" id="bulk-skipped-details">
+                                <strong class="text-secondary">Skipped (Already Present):</strong>
+                                <div class="text-muted mt-1 p-2 bg-white rounded border" id="bulk-skipped-list" style="max-height: 100px; overflow-y: auto;"></div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-color">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" id="save-bulk-upload-btn">
+                            <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                            <span>Upload & Process</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% include "includes/js.html" %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+
+        function filterCinemasTable() {
+            const input = document.getElementById('cinema-search-input');
+            const filter = (input ? input.value : '').toLowerCase().trim();
+            const rows = document.querySelectorAll('.cinema-table-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const name = (row.getAttribute('data-name') || '').toLowerCase();
+                const address = (row.getAttribute('data-address') || '').toLowerCase();
+                const loc = (row.getAttribute('data-location') || '').toLowerCase();
+                const state = (row.getAttribute('data-state') || '').toLowerCase();
+                const sircuit = (row.getAttribute('data-sircuit') || '').toLowerCase();
+                const ctrl = (row.getAttribute('data-controller') || '').toLowerCase();
+                const gst = (row.getAttribute('data-gst') || '').toLowerCase();
+                const pan = (row.getAttribute('data-pan') || '').toLowerCase();
+
+                const combined = `${name} ${address} ${loc} ${state} ${sircuit} ${ctrl} ${gst} ${pan}`;
+
+                if (combined.includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const badgeCount = document.getElementById('badge-cinema-count');
+            if (badgeCount) {
+                badgeCount.textContent = `${visibleCount} Hall(s) Shown`;
+            }
+        }
+
+        function openViewCinemaModal(cinemaId) {
+            const row = document.getElementById(`cinema-row-${cinemaId}`);
+            if (!row) return;
+
+            const name = row.getAttribute('data-name-raw') || '-';
+            const address = row.getAttribute('data-address') || '-';
+            const location = row.getAttribute('data-location') || '-';
+            const state = row.getAttribute('data-state') || '-';
+            const sircuit = row.getAttribute('data-sircuit') || '-';
+            const controller = row.getAttribute('data-controller') || '-';
+            const gst = row.getAttribute('data-gst') || '-';
+            const pan = row.getAttribute('data-pan') || '-';
+            const reports = row.getAttribute('data-reports') || '0';
+            const created = row.getAttribute('data-created') || 'N/A';
+            const updated = row.getAttribute('data-updated') || 'N/A';
+
+            document.getElementById('view-cinema-name').textContent = name;
+            document.getElementById('view-cinema-id').textContent = cinemaId;
+            document.getElementById('view-cinema-address').textContent = address || '-';
+            document.getElementById('view-cinema-location').textContent = location || '-';
+            document.getElementById('view-cinema-state').textContent = state || '-';
+            document.getElementById('view-cinema-sircuit').textContent = sircuit || '-';
+            document.getElementById('view-cinema-controller').textContent = controller || '-';
+            document.getElementById('view-cinema-gst').textContent = gst || '-';
+            document.getElementById('view-cinema-pan').textContent = pan || '-';
+            document.getElementById('view-cinema-reports').textContent = `${reports} Report(s) Linked`;
+            document.getElementById('view-cinema-created').textContent = created;
+            document.getElementById('view-cinema-updated').textContent = updated;
+
+            const editBtn = document.getElementById('view-modal-edit-btn');
+            if (editBtn) {
+                editBtn.onclick = function() {
+                    const viewModalEl = document.getElementById('viewCinemaModal');
+                    const viewModal = bootstrap.Modal.getInstance(viewModalEl);
+                    if (viewModal) viewModal.hide();
+                    openEditCinemaModal(cinemaId);
+                };
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('viewCinemaModal'));
+            modal.show();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openEditCinemaModal(cinemaId) {
+            const row = document.getElementById(`cinema-row-${cinemaId}`);
+            if (!row) return;
+
+            document.getElementById('edit-cinema-id').value = cinemaId;
+            document.getElementById('edit-cinema-name').value = row.getAttribute('data-name-raw') || '';
+            document.getElementById('edit-cinema-address').value = row.getAttribute('data-address') || '';
+            document.getElementById('edit-cinema-location').value = row.getAttribute('data-location') || '';
+            document.getElementById('edit-cinema-state').value = row.getAttribute('data-state') || '';
+            document.getElementById('edit-cinema-sircuit').value = row.getAttribute('data-sircuit') || '';
+            document.getElementById('edit-cinema-controller').value = row.getAttribute('data-controller') || '';
+            document.getElementById('edit-cinema-gst').value = row.getAttribute('data-gst') || '';
+            document.getElementById('edit-cinema-pan').value = row.getAttribute('data-pan') || '';
+
+            const errBox = document.getElementById('modal-edit-error-alert');
+            errBox.classList.add('d-none');
+            errBox.textContent = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('editCinemaModal'));
+            modal.show();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function handleUpdateCinema(e) {
+            e.preventDefault();
+            const cinemaId = document.getElementById('edit-cinema-id').value;
+            const newName = document.getElementById('edit-cinema-name').value.trim();
+            const addressVal = document.getElementById('edit-cinema-address').value.trim();
+            const locationVal = document.getElementById('edit-cinema-location').value.trim();
+            const stateVal = document.getElementById('edit-cinema-state').value.trim();
+            const sircuitVal = document.getElementById('edit-cinema-sircuit').value.trim();
+            const controllerVal = document.getElementById('edit-cinema-controller').value.trim();
+            const gstVal = document.getElementById('edit-cinema-gst').value.trim();
+            const panVal = document.getElementById('edit-cinema-pan').value.trim();
+
+            const errBox = document.getElementById('modal-edit-error-alert');
+            errBox.classList.add('d-none');
+
+            if (!newName) {
+                errBox.textContent = 'Please enter a valid cinema name.';
+                errBox.classList.remove('d-none');
+                return;
+            }
+
+            const btn = document.getElementById('save-edit-cinema-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Updating...`;
+
+            try {
+                const res = await fetch(`/api/cinemas/update/${cinemaId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        cinema_name: newName,
+                        address: addressVal,
+                        location: locationVal,
+                        state: stateVal,
+                        sircuit: sircuitVal,
+                        controller: controllerVal,
+                        gst: gstVal,
+                        pan_number: panVal
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    // Update DOM row attributes
+                    const rowElem = document.getElementById(`cinema-row-${cinemaId}`);
+                    if (rowElem) {
+                        rowElem.setAttribute('data-name', newName.toLowerCase());
+                        rowElem.setAttribute('data-name-raw', newName);
+                        rowElem.setAttribute('data-address', addressVal);
+                        rowElem.setAttribute('data-location', locationVal);
+                        rowElem.setAttribute('data-state', stateVal);
+                        rowElem.setAttribute('data-sircuit', sircuitVal);
+                        rowElem.setAttribute('data-controller', controllerVal);
+                        rowElem.setAttribute('data-gst', gstVal);
+                        rowElem.setAttribute('data-pan', panVal);
+                        rowElem.setAttribute('data-updated', 'Just now');
+                    }
+
+                    // Update DOM text
+                    const nameElem = document.getElementById(`cinema-name-display-${cinemaId}`);
+                    if (nameElem) nameElem.textContent = newName;
+
+                    const updatedElem = document.getElementById(`cinema-updated-${cinemaId}`);
+                    if (updatedElem) updatedElem.textContent = 'Just now';
+
+                    // Hide modal
+                    const modalEl = document.getElementById('editCinemaModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) {
+                        modalInstance.hide();
+                    }
+
+                    alert(data.message || 'Cinema details updated successfully!');
+                } else {
+                    errBox.textContent = data.message || 'Failed to update cinema.';
+                    errBox.classList.remove('d-none');
+                }
+            } catch (err) {
+                errBox.textContent = 'Server error: ' + err.message;
+                errBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Update Cinema Details</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        async function handleBulkUpload(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('bulk-upload-file');
+            const errBox = document.getElementById('modal-bulk-error-alert');
+            errBox.classList.add('d-none');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                errBox.textContent = 'Please select an Excel or CSV file to upload.';
+                errBox.classList.remove('d-none');
+                return;
+            }
+
+            const btn = document.getElementById('save-bulk-upload-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Processing...`;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/api/cinemas/bulk-upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    const resultsBox = document.getElementById('bulk-upload-results');
+                    resultsBox.classList.remove('d-none');
+
+                    document.getElementById('bulk-result-created-badge').textContent = `${data.created_count} New Added`;
+                    document.getElementById('bulk-result-skipped-badge').textContent = `${data.skipped_count} Skipped (Duplicates)`;
+                    document.getElementById('bulk-result-summary').textContent = data.message;
+
+                    const skippedContainer = document.getElementById('bulk-skipped-details');
+                    const skippedList = document.getElementById('bulk-skipped-list');
+                    if (data.skipped_cinemas && data.skipped_cinemas.length > 0) {
+                        skippedContainer.classList.remove('d-none');
+                        skippedList.innerHTML = data.skipped_cinemas.map(name => `<span class="badge bg-light text-secondary border me-1 mb-1">${name}</span>`).join('');
+                    } else {
+                        skippedContainer.classList.add('d-none');
+                    }
+
+                    btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Success! Reloading...</span>`;
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1800);
+                } else {
+                    errBox.textContent = data.message || 'Bulk upload failed.';
+                    errBox.classList.remove('d-none');
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="upload" style="width: 14px; height: 14px;"></i> <span>Upload & Process</span>`;
+                }
+            } catch (err) {
+                errBox.textContent = 'Server error: ' + err.message;
+                errBox.classList.remove('d-none');
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="upload" style="width: 14px; height: 14px;"></i> <span>Upload & Process</span>`;
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function deleteCinema(cinemaId, cinemaName, reportCount) {
+            if (reportCount > 0) {
+                alert(`Cannot delete cinema "${cinemaName}" because ${reportCount} DCR report(s) are linked to it.`);
+                return;
+            }
+
+            if (!confirm(`Are you sure you want to delete "${cinemaName}" from Cinema Master?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/cinemas/delete/${cinemaId}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    const row = document.getElementById(`cinema-row-${cinemaId}`);
+                    if (row) {
+                        row.remove();
+                    }
+                    alert(data.message || 'Cinema deleted successfully.');
+                } else {
+                    alert(data.message || 'Failed to delete cinema.');
+                }
+            } catch (err) {
+                alert('Error deleting cinema: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>
