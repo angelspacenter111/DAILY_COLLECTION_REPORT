@@ -267,6 +267,9 @@
                                         data-controller="{{ c.get('controller', '') }}"
                                         data-gst="{{ c.get('gst', '') }}"
                                         data-pan="{{ c.get('pan_number', '') }}"
+                                        data-format="{{ c.get('digital_format', '') }}"
+                                        data-charges="{{ c.get('digital_charges') or c.get('digital_charges_per_show', '') }}"
+                                        data-cdc="{{ c.get('cdc_charges', '') }}"
                                         data-reports="{{ c.get('report_count', 0) }}"
                                         data-created="{{ c.get('created_at_formatted', 'N/A') }}"
                                         data-updated="{{ c.get('updated_at_formatted', 'N/A') }}">
@@ -439,6 +442,30 @@
                                 <div class="fw-bold fs-6 text-dark" id="view-cinema-pan">-</div>
                             </div>
                         </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="monitor" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Digital Format
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-format">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="banknote" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Digital Charges
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-charges">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="tag" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> CDC Charges
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-cinema-cdc">-</div>
+                            </div>
+                        </div>
                         <div class="col-md-6">
                             <div class="p-3 bg-light rounded-3 border">
                                 <div class="text-muted small text-uppercase fw-semibold mb-1">
@@ -529,7 +556,7 @@
                         </div>
 
                         <!-- GST & PAN Number -->
-                        <div class="row g-3 mb-2">
+                        <div class="row g-3 mb-3">
                             <div class="col-md-6">
                                 <label for="edit-cinema-gst" class="form-label fw-semibold">GST</label>
                                 <input type="text" class="form-control" id="edit-cinema-gst" name="gst" placeholder="e.g. 27AAAAA0000A1Z5" autocomplete="off">
@@ -537,6 +564,22 @@
                             <div class="col-md-6">
                                 <label for="edit-cinema-pan" class="form-label fw-semibold">PAN Number</label>
                                 <input type="text" class="form-control" id="edit-cinema-pan" name="pan_number" placeholder="e.g. ABCDE1234F" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Digital Format, Digital Charges, CDC Charges -->
+                        <div class="row g-3 mb-2">
+                            <div class="col-md-4">
+                                <label for="edit-cinema-format" class="form-label fw-semibold">Digital Format</label>
+                                <input type="text" class="form-control" id="edit-cinema-format" name="digital_format" placeholder="e.g. 2K, 4K, 3D, IMAX" autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="edit-cinema-charges" class="form-label fw-semibold">Digital Charges</label>
+                                <input type="text" class="form-control" id="edit-cinema-charges" name="digital_charges" placeholder="e.g. 350, 500" autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="edit-cinema-cdc" class="form-label fw-semibold">CDC Charges</label>
+                                <input type="text" class="form-control" id="edit-cinema-cdc" name="cdc_charges" placeholder="e.g. 1000, 2000" autocomplete="off">
                             </div>
                         </div>
                     </div>
@@ -651,8 +694,11 @@
                 const ctrl = (row.getAttribute('data-controller') || '').toLowerCase();
                 const gst = (row.getAttribute('data-gst') || '').toLowerCase();
                 const pan = (row.getAttribute('data-pan') || '').toLowerCase();
+                const format = (row.getAttribute('data-format') || '').toLowerCase();
+                const charges = (row.getAttribute('data-charges') || '').toLowerCase();
+                const cdc = (row.getAttribute('data-cdc') || '').toLowerCase();
 
-                const combined = `${name} ${address} ${loc} ${state} ${sircuit} ${ctrl} ${gst} ${pan}`;
+                const combined = `${name} ${address} ${loc} ${state} ${sircuit} ${ctrl} ${gst} ${pan} ${format} ${charges} ${cdc}`;
 
                 if (combined.includes(filter)) {
                     row.style.display = '';
@@ -680,6 +726,9 @@
             const controller = row.getAttribute('data-controller') || '-';
             const gst = row.getAttribute('data-gst') || '-';
             const pan = row.getAttribute('data-pan') || '-';
+            const format = row.getAttribute('data-format') || '-';
+            const charges = row.getAttribute('data-charges') || '-';
+            const cdc = row.getAttribute('data-cdc') || '-';
             const reports = row.getAttribute('data-reports') || '0';
             const created = row.getAttribute('data-created') || 'N/A';
             const updated = row.getAttribute('data-updated') || 'N/A';
@@ -693,6 +742,9 @@
             document.getElementById('view-cinema-controller').textContent = controller || '-';
             document.getElementById('view-cinema-gst').textContent = gst || '-';
             document.getElementById('view-cinema-pan').textContent = pan || '-';
+            document.getElementById('view-cinema-format').textContent = format || '-';
+            document.getElementById('view-cinema-charges').textContent = charges || '-';
+            document.getElementById('view-cinema-cdc').textContent = cdc || '-';
             document.getElementById('view-cinema-reports').textContent = `${reports} Report(s) Linked`;
             document.getElementById('view-cinema-created').textContent = created;
             document.getElementById('view-cinema-updated').textContent = updated;
@@ -725,6 +777,9 @@
             document.getElementById('edit-cinema-controller').value = row.getAttribute('data-controller') || '';
             document.getElementById('edit-cinema-gst').value = row.getAttribute('data-gst') || '';
             document.getElementById('edit-cinema-pan').value = row.getAttribute('data-pan') || '';
+            document.getElementById('edit-cinema-format').value = row.getAttribute('data-format') || '';
+            document.getElementById('edit-cinema-charges').value = row.getAttribute('data-charges') || '';
+            document.getElementById('edit-cinema-cdc').value = row.getAttribute('data-cdc') || '';
 
             const errBox = document.getElementById('modal-edit-error-alert');
             errBox.classList.add('d-none');
@@ -746,6 +801,9 @@
             const controllerVal = document.getElementById('edit-cinema-controller').value.trim();
             const gstVal = document.getElementById('edit-cinema-gst').value.trim();
             const panVal = document.getElementById('edit-cinema-pan').value.trim();
+            const formatVal = document.getElementById('edit-cinema-format').value.trim();
+            const chargesVal = document.getElementById('edit-cinema-charges').value.trim();
+            const cdcVal = document.getElementById('edit-cinema-cdc').value.trim();
 
             const errBox = document.getElementById('modal-edit-error-alert');
             errBox.classList.add('d-none');
@@ -772,7 +830,11 @@
                         sircuit: sircuitVal,
                         controller: controllerVal,
                         gst: gstVal,
-                        pan_number: panVal
+                        pan_number: panVal,
+                        digital_format: formatVal,
+                        digital_charges: chargesVal,
+                        digital_charges_per_show: chargesVal,
+                        cdc_charges: cdcVal
                     })
                 });
                 const data = await res.json();
@@ -789,6 +851,9 @@
                         rowElem.setAttribute('data-controller', controllerVal);
                         rowElem.setAttribute('data-gst', gstVal);
                         rowElem.setAttribute('data-pan', panVal);
+                        rowElem.setAttribute('data-format', formatVal);
+                        rowElem.setAttribute('data-charges', chargesVal);
+                        rowElem.setAttribute('data-cdc', cdcVal);
                         rowElem.setAttribute('data-updated', 'Just now');
                     }
 

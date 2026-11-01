@@ -434,6 +434,11 @@ async def list_all_cinemas() -> List[Dict[str, Any]]:
             doc["controller"] = doc.get("controller") or ""
             doc["gst"] = doc.get("gst") or ""
             doc["pan_number"] = doc.get("pan_number") or ""
+            doc["digital_format"] = doc.get("digital_format") or ""
+            charges_val = doc.get("digital_charges") or doc.get("digital_charges_per_show") or ""
+            doc["digital_charges"] = charges_val
+            doc["digital_charges_per_show"] = charges_val
+            doc["cdc_charges"] = doc.get("cdc_charges") or ""
 
             created_at = doc.get("created_at")
             if isinstance(created_at, datetime):
@@ -468,6 +473,11 @@ async def get_cinema_by_id(cinema_id: str) -> Optional[Dict[str, Any]]:
             doc["controller"] = doc.get("controller") or ""
             doc["gst"] = doc.get("gst") or ""
             doc["pan_number"] = doc.get("pan_number") or ""
+            doc["digital_format"] = doc.get("digital_format") or ""
+            charges_val = doc.get("digital_charges") or doc.get("digital_charges_per_show") or ""
+            doc["digital_charges"] = charges_val
+            doc["digital_charges_per_show"] = charges_val
+            doc["cdc_charges"] = doc.get("cdc_charges") or ""
             doc["report_count"] = await db.dcr_reports.count_documents({"cinema_id": ObjectId(cinema_id)})
             return sanitize_mongo_doc(doc)
         return None
@@ -483,9 +493,13 @@ async def create_cinema_master_record(
     sircuit: str = "",
     controller: str = "",
     gst: str = "",
-    pan_number: str = ""
+    pan_number: str = "",
+    digital_format: str = "",
+    digital_charges: str = "",
+    cdc_charges: str = "",
+    digital_charges_per_show: str = ""
 ) -> Tuple[bool, str, Optional[Dict[str, Any]]]:
-    """Manually creates a new cinema in cinema_master with address, location, tax, and regional fields."""
+    """Manually creates a new cinema in cinema_master with address, location, tax, digital format, and charges."""
     cleaned = (cinema_name or "").strip()
     if not cleaned:
         return False, "Cinema name cannot be empty.", None
@@ -498,6 +512,7 @@ async def create_cinema_master_record(
             return False, f"Cinema '{cleaned}' already exists in Cinema Master.", None
 
         now = datetime.now(timezone.utc)
+        resolved_charges = (digital_charges or digital_charges_per_show or "").strip()
         doc = {
             "cinema_name": cleaned,
             "address": (address or "").strip(),
@@ -507,6 +522,10 @@ async def create_cinema_master_record(
             "controller": (controller or "").strip(),
             "gst": (gst or "").strip(),
             "pan_number": (pan_number or "").strip(),
+            "digital_format": (digital_format or "").strip(),
+            "digital_charges": resolved_charges,
+            "digital_charges_per_show": resolved_charges,
+            "cdc_charges": (cdc_charges or "").strip(),
             "created_at": now,
             "updated_at": now
         }
@@ -530,7 +549,11 @@ async def update_cinema_record(
     sircuit: str = "",
     controller: str = "",
     gst: str = "",
-    pan_number: str = ""
+    pan_number: str = "",
+    digital_format: str = "",
+    digital_charges: str = "",
+    cdc_charges: str = "",
+    digital_charges_per_show: str = ""
 ) -> Tuple[bool, str]:
     """
     Updates cinema details in cinema_master and synchronizes the
@@ -555,6 +578,7 @@ async def update_cinema_record(
             return False, f"Another cinema with the name '{cleaned}' already exists."
 
         now = datetime.now(timezone.utc)
+        resolved_charges = (digital_charges or digital_charges_per_show or "").strip()
         update_data = {
             "cinema_name": cleaned,
             "address": (address or "").strip(),
@@ -564,6 +588,10 @@ async def update_cinema_record(
             "controller": (controller or "").strip(),
             "gst": (gst or "").strip(),
             "pan_number": (pan_number or "").strip(),
+            "digital_format": (digital_format or "").strip(),
+            "digital_charges": resolved_charges,
+            "digital_charges_per_show": resolved_charges,
+            "cdc_charges": (cdc_charges or "").strip(),
             "updated_at": now
         }
         res = await db.cinema_master.update_one(
@@ -614,6 +642,7 @@ async def bulk_create_cinemas(cinemas_list: List[Dict[str, Any]]) -> Dict[str, A
                 continue
 
             seen_in_batch.add(name_key)
+            resolved_charges = str(item.get("digital_charges") or item.get("digital_charges_per_show") or "").strip()
             doc = {
                 "cinema_name": raw_name,
                 "address": str(item.get("address") or "").strip(),
@@ -623,6 +652,10 @@ async def bulk_create_cinemas(cinemas_list: List[Dict[str, Any]]) -> Dict[str, A
                 "controller": str(item.get("controller") or "").strip(),
                 "gst": str(item.get("gst") or "").strip(),
                 "pan_number": str(item.get("pan_number") or "").strip(),
+                "digital_format": str(item.get("digital_format") or "").strip(),
+                "digital_charges": resolved_charges,
+                "digital_charges_per_show": resolved_charges,
+                "cdc_charges": str(item.get("cdc_charges") or "").strip(),
                 "created_at": now,
                 "updated_at": now
             }

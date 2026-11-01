@@ -76,6 +76,9 @@ async def update_cinema_action(request: Request, cinema_id: str):
         controller = str(data.get("controller", "")).strip()
         gst = str(data.get("gst", "")).strip()
         pan_number = str(data.get("pan_number", "")).strip()
+        digital_format = str(data.get("digital_format", "")).strip()
+        digital_charges = str(data.get("digital_charges") or data.get("digital_charges_per_show", "")).strip()
+        cdc_charges = str(data.get("cdc_charges", "")).strip()
 
         if not new_name:
             return JSONResponse({"status": False, "message": "Cinema name cannot be empty."}, status_code=400)
@@ -90,6 +93,10 @@ async def update_cinema_action(request: Request, cinema_id: str):
             controller=controller,
             gst=gst,
             pan_number=pan_number,
+            digital_format=digital_format,
+            digital_charges=digital_charges,
+            cdc_charges=cdc_charges,
+            digital_charges_per_show=digital_charges,
         )
         if not success:
             return JSONResponse({"status": False, "message": message}, status_code=400)
@@ -107,6 +114,10 @@ async def update_cinema_action(request: Request, cinema_id: str):
             "controller": controller,
             "gst": gst,
             "pan_number": pan_number,
+            "digital_format": digital_format,
+            "digital_charges": digital_charges,
+            "digital_charges_per_show": digital_charges,
+            "cdc_charges": cdc_charges,
         })
     except Exception as e:
         logger.exception("Error updating cinema: %s", e)
@@ -173,6 +184,9 @@ async def download_cinemas_excel(request: Request):
         "Contoller",
         "GST Number",
         "PAN Number",
+        "Digital Format",
+        "Digital Charges",
+        "CDC Charges",
         "Linked DCR Reports",
         "Added On",
         "Last Updated"
@@ -210,6 +224,9 @@ async def download_cinemas_excel(request: Request):
             c.get("controller", ""),
             c.get("gst", ""),
             c.get("pan_number", ""),
+            c.get("digital_format", ""),
+            c.get("digital_charges") or c.get("digital_charges_per_show", ""),
+            c.get("cdc_charges", ""),
             c.get("report_count", 0),
             c.get("created_at_formatted", "N/A"),
             c.get("updated_at_formatted", "N/A"),
@@ -223,7 +240,7 @@ async def download_cinemas_excel(request: Request):
             cell.font = data_font
             cell.border = cell_border
             # center align numbers and dates
-            if col_idx in (1, 10, 11, 12):
+            if col_idx in (1, 10, 11, 12, 13, 14, 15):
                 cell.alignment = data_align_center
             else:
                 cell.alignment = data_align_left
@@ -271,7 +288,10 @@ async def download_cinema_template_excel(request: Request):
         "Sircuit",
         "Contoller",
         "GST",
-        "PAN Number"
+        "PAN Number",
+        "Digital Format",
+        "Digital Charges",
+        "CDC Charges"
     ]
 
     header_fill = PatternFill(start_color="3B82F6", end_color="3B82F6", fill_type="solid")
@@ -292,9 +312,9 @@ async def download_cinema_template_excel(request: Request):
         cell.border = cell_border
 
     sample_rows = [
-        ["PVR Phoenix Marketcity", "Viman Nagar Road", "Pune", "Maharashtra", "Bombay", "Mr. Sharma", "27AAAAA0000A1Z5", "ABCDE1234F"],
-        ["Inox City Center", "Sector 12", "Ghaziabad", "Uttar Pradesh", "Delhi-UP", "Mr. Verma", "07BBBBB0000B1Z6", "BBBBB0000B"],
-        ["Cinepolis Nexus Mall", "Koramangala 7th Block", "Bangalore", "Karnataka", "South", "Mr. Rao", "29CCCCC0000C1Z7", "CCCCC0000C"]
+        ["PVR Phoenix Marketcity", "Viman Nagar Road", "Pune", "Maharashtra", "Bombay", "Mr. Sharma", "27AAAAA0000A1Z5", "ABCDE1234F", "2D", "500.00", "300.00"],
+        ["Inox City Center", "Sector 12", "Ghaziabad", "Uttar Pradesh", "Delhi-UP", "Mr. Verma", "07BBBBB0000B1Z6", "BBBBB0000B", "3D", "650.00", "350.00"],
+        ["Cinepolis Nexus Mall", "Koramangala 7th Block", "Bangalore", "Karnataka", "South", "Mr. Rao", "29CCCCC0000C1Z7", "CCCCC0000C", "4DX", "800.00", "400.00"]
     ]
 
     for r_idx, row_data in enumerate(sample_rows, start=2):
@@ -440,6 +460,17 @@ def _extract_header_indices(header_row: List[str]) -> Dict[str, int]:
         elif "pan" in c:
             if "pan_number" not in header_map:
                 header_map["pan_number"] = idx
+        elif "format" in c or "digital format" in c:
+            if "digital_format" not in header_map:
+                header_map["digital_format"] = idx
+        elif "digital charge" in c or "dig charge" in c or "per show" in c:
+            if "digital_charges" not in header_map:
+                header_map["digital_charges"] = idx
+            if "digital_charges_per_show" not in header_map:
+                header_map["digital_charges_per_show"] = idx
+        elif "cdc" in c:
+            if "cdc_charges" not in header_map:
+                header_map["cdc_charges"] = idx
 
     if "cinema_name" not in header_map and len(header_row) > 0:
         header_map["cinema_name"] = 0
@@ -454,6 +485,7 @@ def _build_cinema_dict(row: Any, header_map: Dict[str, int]) -> Dict[str, str]:
             return str(val).strip() if val is not None else ""
         return ""
 
+    resolved_charges = get_val("digital_charges") or get_val("digital_charges_per_show")
     return {
         "cinema_name": get_val("cinema_name"),
         "address": get_val("address"),
@@ -463,4 +495,8 @@ def _build_cinema_dict(row: Any, header_map: Dict[str, int]) -> Dict[str, str]:
         "controller": get_val("controller"),
         "gst": get_val("gst"),
         "pan_number": get_val("pan_number"),
+        "digital_format": get_val("digital_format"),
+        "digital_charges": resolved_charges,
+        "digital_charges_per_show": resolved_charges,
+        "cdc_charges": get_val("cdc_charges"),
     }
