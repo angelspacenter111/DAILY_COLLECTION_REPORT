@@ -5,6 +5,7 @@ from pathlib import Path
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from helpers.database_helper import init_db_indexes
+from helpers.release_helper import init_release_indexes
 from helpers.auth_helper import seed_default_super_admin
 from config import ENABLE_EMAIL_LISTENER
 from services.email_listener import run_email_listener_loop
@@ -18,6 +19,7 @@ logger = logging.getLogger(__name__)
 async def lifespan(app: FastAPI):
     try:
         await asyncio.wait_for(init_db_indexes(), timeout=4.0)
+        await asyncio.wait_for(init_release_indexes(), timeout=4.0)
         await seed_default_super_admin()
     except Exception as e:
         logger.warning("Startup initialization notice: %s", str(e))

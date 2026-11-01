@@ -1,0 +1,1055 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Release Master | First Film Studios</title>
+    {% include "includes/css.html" %}
+    <style>
+        .release-icon-badge {
+            width: 36px;
+            height: 36px;
+            border-radius: 9px;
+            background: linear-gradient(135deg, rgba(79, 70, 229, 0.12), rgba(124, 58, 237, 0.12));
+            color: #4f46e5;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+            border: 1px solid rgba(79, 70, 229, 0.2);
+        }
+        .kpi-card-release {
+            background: #ffffff;
+            border: 1px solid var(--border-color, #e2e8f0);
+            border-radius: 12px;
+            padding: 1.15rem 1.25rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .kpi-card-release .kpi-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            color: #64748b;
+            margin-bottom: 4px;
+        }
+        .kpi-card-release .kpi-value {
+            font-size: 1.65rem;
+            font-weight: 700;
+            color: #0f172a;
+            line-height: 1.1;
+        }
+        .kpi-card-release .kpi-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .match-badge {
+            font-size: 0.72rem;
+            font-weight: 600;
+            padding: 0.28rem 0.6rem;
+            border-radius: 20px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            white-space: nowrap;
+        }
+        .match-badge-success {
+            background-color: #ecfdf5;
+            color: #059669;
+            border: 1px solid #a7f3d0;
+        }
+        .match-badge-warning {
+            background-color: #fffbeb;
+            color: #d97706;
+            border: 1px solid #fde68a;
+        }
+
+        /* Modern Action Buttons */
+        .btn-action-view {
+            background: #eff6ff;
+            color: #2563eb;
+            border: 1px solid #bfdbfe;
+            font-weight: 600;
+            font-size: 0.76rem;
+            padding: 0.32rem 0.65rem;
+            border-radius: 7px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn-action-view:hover {
+            background: #2563eb;
+            color: #ffffff !important;
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-edit {
+            background: #f5f3ff;
+            color: #7c3aed;
+            border: 1px solid #ddd6fe;
+            font-weight: 600;
+            font-size: 0.76rem;
+            padding: 0.32rem 0.65rem;
+            border-radius: 7px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            text-decoration: none;
+            white-space: nowrap;
+        }
+        .btn-action-edit:hover {
+            background: #7c3aed;
+            color: #ffffff !important;
+            border-color: #7c3aed;
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.28);
+            transform: translateY(-1px);
+        }
+
+        .btn-action-delete {
+            background: #fef2f2;
+            color: #dc2626;
+            border: 1px solid #fecaca;
+            font-weight: 600;
+            font-size: 0.76rem;
+            padding: 0.32rem 0.55rem;
+            border-radius: 7px;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            cursor: pointer;
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            white-space: nowrap;
+        }
+        .btn-action-delete:hover {
+            background: #dc2626;
+            color: #ffffff !important;
+            border-color: #dc2626;
+            box-shadow: 0 4px 12px rgba(220, 38, 38, 0.28);
+            transform: translateY(-1px);
+        }
+
+        /* Responsive Table */
+        .table-release thead th {
+            font-size: 0.78rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            padding: 0.75rem 0.65rem;
+            background-color: #f8fafc;
+        }
+        .table-release tbody td {
+            font-size: 0.84rem;
+            padding: 0.7rem 0.65rem;
+            vertical-align: middle;
+        }
+    </style>
+</head>
+<body>
+    <div class="app-container">
+        {% include "includes/sidebar.html" %}
+        <main class="app-content">
+            {% include "includes/header.html" %}
+            <section class="page-container" id="release-master-wrapper">
+                <!-- Page Header with Action Buttons -->
+                <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+                    <div>
+                        <h1 class="h3 fw-bold mb-1">Release Master</h1>
+                        <p class="text-muted mb-0">Theatrical release schedules mapped with Cinema Master (Location, State, Circuit, Digital Format, Calculated Digital Charges, CDC Charges, Controller, GST &amp; PAN).</p>
+                    </div>
+                    <div class="d-flex align-items-center gap-2 flex-wrap">
+                        <!-- Excel Export Button -->
+                        <a href="/api/releases/download-excel" class="btn btn-outline-success btn-sm d-inline-flex align-items-center gap-2 shadow-sm px-3 py-2" title="Export Releases to Excel (.xlsx)">
+                            <i data-lucide="file-spreadsheet" style="width: 16px; height: 16px;"></i>
+                            <span>Export Excel</span>
+                        </a>
+
+                        {% if current_user and current_user.get('role') == 'super_admin' %}
+                        <!-- Bulk Upload Button -->
+                        <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-2 shadow-sm px-3 py-2" data-bs-toggle="modal" data-bs-target="#bulkUploadModal" title="Bulk Upload Releases from Excel">
+                            <i data-lucide="upload-cloud" style="width: 16px; height: 16px;"></i>
+                            <span>Bulk Upload Excel</span>
+                        </button>
+
+                        {% if releases and releases|length > 0 %}
+                        <!-- Clear All Data Button -->
+                        <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1 shadow-sm px-3 py-2" onclick="clearAllReleases()" title="Delete all release records">
+                            <i data-lucide="trash-2" style="width: 15px; height: 15px;"></i>
+                            <span>Clear All Data</span>
+                        </button>
+                        {% endif %}
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- KPI Summary Cards -->
+                <div class="row g-3 mb-4">
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi-card-release">
+                            <div>
+                                <div class="kpi-label">Total Releases</div>
+                                <div class="kpi-value" id="kpi-total-releases">{{ stats.total_releases }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(79, 70, 229, 0.12); color: #4f46e5;">
+                                <i data-lucide="film" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi-card-release">
+                            <div>
+                                <div class="kpi-label">Distinct Movies</div>
+                                <div class="kpi-value" id="kpi-distinct-movies">{{ stats.distinct_movies_count }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(14, 165, 233, 0.12); color: #0ea5e9;">
+                                <i data-lucide="clapperboard" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi-card-release">
+                            <div>
+                                <div class="kpi-label">Cinema Master Matched</div>
+                                <div class="kpi-value text-success" id="kpi-matched-cinemas">{{ stats.matched_cinemas }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.12); color: #10b981;">
+                                <i data-lucide="check-circle" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-sm-6 col-lg-3">
+                        <div class="kpi-card-release">
+                            <div>
+                                <div class="kpi-label">Total Scheduled Shows</div>
+                                <div class="kpi-value" id="kpi-total-shows">{{ stats.total_shows }}</div>
+                            </div>
+                            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.12); color: #f59e0b;">
+                                <i data-lucide="calendar-days" style="width: 22px; height: 22px;"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Release Table Card -->
+                <div class="card-custom">
+                    <div class="d-flex justify-content-between align-items-center mb-3 flex-wrap gap-2">
+                        <div class="d-flex align-items-center gap-2">
+                            <h3 class="h5 fw-bold mb-0">Theatrical Releases</h3>
+                            <span class="badge bg-primary-subtle text-primary px-3 py-1 fs-6 rounded-pill" id="badge-release-count">
+                                {{ releases|length }} Record(s) Total
+                            </span>
+                        </div>
+                        <div class="d-flex align-items-center gap-2 flex-wrap">
+                            <div class="input-group input-group-sm" style="width: 320px;">
+                                <span class="input-group-text bg-white border-end-0">
+                                    <i data-lucide="search" style="width: 14px; height: 14px; color: #94a3b8;"></i>
+                                </span>
+                                <input type="text" class="form-control border-start-0 ps-0" id="release-search-input" placeholder="Search movie, cinema, location, state, circuit..." oninput="filterReleasesTable()">
+                            </div>
+                            {% if current_user and current_user.get('role') == 'super_admin' and releases and releases|length > 0 %}
+                            <button type="button" class="btn btn-outline-danger btn-sm d-inline-flex align-items-center gap-1 shadow-sm" onclick="clearAllReleases()" title="Delete all release records">
+                                <i data-lucide="trash-2" style="width: 14px; height: 14px;"></i>
+                                <span>Clear All Data</span>
+                            </button>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="table-responsive-custom" style="overflow-x: auto;">
+                        <table class="table table-custom table-release align-middle mb-0 text-nowrap">
+                            <thead>
+                                <tr>
+                                    <th style="width: 45px;">#</th>
+                                    <th>Movie Name</th>
+                                    <th>Cinema / Theatre</th>
+                                    <th>Location</th>
+                                    <th>State</th>
+                                    <th>Circuit</th>
+                                    <th>Digital Format</th>
+                                    <th class="text-end">Digital Charges</th>
+                                    <th class="text-end">CDC Charges</th>
+                                    <th>Controller</th>
+                                    <th>GST Number</th>
+                                    <th>PAN Number</th>
+                                    <th>Show Timing</th>
+                                    <th class="text-center" style="width: 70px;">Shows</th>
+                                    <th class="text-center" style="width: 150px;">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="release-table-body">
+                                {% if releases and releases|length > 0 %}
+                                    {% for r in releases %}
+                                    <tr id="release-row-{{ r['id'] }}"
+                                        class="release-table-row"
+                                        data-movie="{{ r['movie_name']|lower }}"
+                                        data-movie-raw="{{ r['movie_name'] }}"
+                                        data-cinema="{{ r['cinema_name']|lower }}"
+                                        data-cinema-raw="{{ r['cinema_name'] }}"
+                                        data-matched-name="{{ r.get('matched_cinema_name', '') }}"
+                                        data-is-matched="{{ 'true' if r.get('is_matched') else 'false' }}"
+                                        data-location="{{ r.get('location', '') }}"
+                                        data-state="{{ r.get('state', '') }}"
+                                        data-circuit="{{ r.get('circuit', '') }}"
+                                        data-format="{{ r.get('digital_format', '') }}"
+                                        data-charges="{{ r.get('digital_charges', '') }}"
+                                        data-charges-rate="{{ r.get('digital_charges_rate', '') }}"
+                                        data-charges-val="{{ r.get('digital_charges_val', 0) }}"
+                                        data-cdc="{{ r.get('cdc_charges', '') }}"
+                                        data-controller="{{ r.get('controller', '') }}"
+                                        data-gst="{{ r.get('gst', '') }}"
+                                        data-pan="{{ r.get('pan_number', '') }}"
+                                        data-address="{{ r.get('address', '') }}"
+                                        data-timing="{{ r.get('show_timing', '') }}"
+                                        data-count="{{ r.get('show_count', 1) }}"
+                                        data-created="{{ r.get('created_at_formatted', 'N/A') }}"
+                                        data-updated="{{ r.get('updated_at_formatted', 'N/A') }}">
+                                        <td class="text-muted small fw-semibold">{{ loop.index }}</td>
+                                        <td>
+                                            <div class="d-flex align-items-center gap-2">
+                                                <div class="release-icon-badge" style="width: 30px; height: 30px;">
+                                                    <i data-lucide="film" style="width: 14px; height: 14px;"></i>
+                                                </div>
+                                                <div class="fw-bold fs-6 text-dark" id="release-movie-text-{{ r['id'] }}">
+                                                    {{ r['movie_name'] }}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>
+                                            <div class="fw-semibold text-dark cinema-name-text" id="release-cinema-text-{{ r['id'] }}">
+                                                {{ r['cinema_name'] }}
+                                            </div>
+                                            {% if r.get('is_matched') %}
+                                            <div class="mt-1">
+                                                <span class="match-badge match-badge-success" title="Matched in Cinema Master: {{ r.get('matched_cinema_name') }}">
+                                                    <i data-lucide="shield-check" style="width: 12px; height: 12px;"></i>
+                                                    <span class="text-truncate" style="max-width: 150px;">{{ r.get('matched_cinema_name') }}</span>
+                                                </span>
+                                            </div>
+                                            {% else %}
+                                            <div class="mt-1">
+                                                <span class="match-badge match-badge-warning" title="Not in Cinema Master">
+                                                    <i data-lucide="alert-circle" style="width: 12px; height: 12px;"></i>
+                                                    <span>Unmatched</span>
+                                                </span>
+                                            </div>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="small text-dark" id="release-loc-text-{{ r['id'] }}">{{ r.get('location') or '-' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small text-muted" id="release-state-text-{{ r['id'] }}">{{ r.get('state') or '-' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small text-muted" id="release-circuit-text-{{ r['id'] }}">{{ r.get('circuit') or '-' }}</div>
+                                        </td>
+                                        <td>
+                                            {% if r.get('digital_format') and r.get('digital_format') != '-' %}
+                                            <span class="badge bg-secondary-subtle text-secondary px-2 py-1" id="release-format-text-{{ r['id'] }}">{{ r.get('digital_format') }}</span>
+                                            {% else %}
+                                            <span class="text-muted small" id="release-format-text-{{ r['id'] }}">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if r.get('digital_charges') and r.get('digital_charges') != '-' %}
+                                            <div class="fw-bold text-success fs-6" id="release-charges-text-{{ r['id'] }}">₹{{ r.get('digital_charges') }}</div>
+                                            {% if r.get('digital_charges_rate') and r.get('digital_charges_rate') != '0' %}
+                                            <div class="text-muted" style="font-size: 0.7rem;" title="Rate ₹{{ r.get('digital_charges_rate') }} × {{ r.get('show_count', 1) }} Shows">
+                                                ₹{{ r.get('digital_charges_rate') }} × {{ r.get('show_count', 1) }}
+                                            </div>
+                                            {% endif %}
+                                            {% else %}
+                                            <span class="text-muted small" id="release-charges-text-{{ r['id'] }}">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td class="text-end">
+                                            {% if r.get('cdc_charges') and r.get('cdc_charges') != '-' %}
+                                            <div class="small fw-semibold text-dark" id="release-cdc-text-{{ r['id'] }}">₹{{ r.get('cdc_charges') }}</div>
+                                            {% else %}
+                                            <span class="text-muted small" id="release-cdc-text-{{ r['id'] }}">-</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="small text-dark" id="release-ctrl-text-{{ r['id'] }}">{{ r.get('controller') or '-' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small font-monospace text-muted" id="release-gst-text-{{ r['id'] }}">{{ r.get('gst') or '-' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small font-monospace text-muted" id="release-pan-text-{{ r['id'] }}">{{ r.get('pan_number') or '-' }}</div>
+                                        </td>
+                                        <td>
+                                            <div class="small text-dark text-truncate" id="release-timing-text-{{ r['id'] }}" style="max-width: 170px;" title="{{ r.get('show_timing') }}">
+                                                {{ r.get('show_timing') or '-' }}
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded" id="release-count-badge-{{ r['id'] }}">
+                                                {{ r.get('show_count', 1) }}
+                                            </span>
+                                        </td>
+                                        <td class="text-center">
+                                            <div class="d-flex align-items-center justify-content-center gap-1">
+                                                <button type="button" class="btn-action-view" onclick="openViewReleaseModal('{{ r['id'] }}')" title="View Release Details">
+                                                    <i data-lucide="eye" style="width: 13px; height: 13px;"></i>
+                                                    <span>View</span>
+                                                </button>
+                                                {% if current_user and current_user.get('role') == 'super_admin' %}
+                                                <button type="button" class="btn-action-edit" onclick="openEditReleaseModal('{{ r['id'] }}')" title="Edit Release">
+                                                    <i data-lucide="edit-3" style="width: 13px; height: 13px;"></i>
+                                                    <span>Edit</span>
+                                                </button>
+                                                <button type="button" class="btn-action-delete" onclick="deleteRelease('{{ r['id'] }}', '{{ r['movie_name']|replace('\'', '\\\'') }}', '{{ r['cinema_name']|replace('\'', '\\\'') }}')" title="Delete Release">
+                                                    <i data-lucide="trash-2" style="width: 13px; height: 13px;"></i>
+                                                </button>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    {% endfor %}
+                                {% else %}
+                                    <tr id="empty-releases-row">
+                                        <td colspan="15" class="text-center py-5 text-muted">
+                                            <i data-lucide="film" class="d-block mx-auto mb-2 opacity-50" style="width: 44px; height: 44px;"></i>
+                                            <p class="mb-0 fw-semibold">No theatrical releases imported yet in Release Master.</p>
+                                            <small class="text-muted">Use the Bulk Upload Excel button above to import releases.</small>
+                                        </td>
+                                    </tr>
+                                {% endif %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- View Release Details Modal -->
+    <div class="modal fade" id="viewReleaseModal" tabindex="-1" aria-labelledby="viewReleaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom shadow-lg">
+                <div class="modal-header border-color">
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="release-icon-badge" style="width: 34px; height: 34px;">
+                            <i data-lucide="info" style="width: 18px; height: 18px;"></i>
+                        </div>
+                        <div>
+                            <h5 class="modal-title fw-bold mb-0" id="viewReleaseModalLabel">Release Details</h5>
+                            <small class="text-muted">Theatrical schedule &amp; Cinema Master mapped data</small>
+                        </div>
+                    </div>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body p-4">
+                    <!-- Movie & Cinema Header Card -->
+                    <div class="p-3 mb-4 rounded-3 d-flex align-items-center justify-content-between flex-wrap gap-2" style="background: linear-gradient(135deg, rgba(79, 70, 229, 0.08), rgba(124, 58, 237, 0.08)); border: 1px solid rgba(79, 70, 229, 0.2);">
+                        <div>
+                            <h4 class="fw-bold mb-1 text-dark" id="view-release-movie">-</h4>
+                            <div class="text-muted small">
+                                Theatrical Cinema: <strong class="text-primary" id="view-release-cinema">-</strong>
+                            </div>
+                        </div>
+                        <div id="view-release-match-badge-container">
+                            <span class="match-badge match-badge-warning" id="view-release-match-badge">Unmatched</span>
+                        </div>
+                    </div>
+
+                    <!-- Details Grid -->
+                    <div class="row g-3">
+                        <!-- Cinema Master Linked Record Banner -->
+                        <div class="col-12" id="view-release-matched-box">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="shield-check" class="me-1" style="width: 14px; height: 14px; color: #10b981;"></i> Cinema Master Linked Record
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-matched-name">-</div>
+                                <div class="small text-muted mt-1" id="view-release-matched-address"></div>
+                            </div>
+                        </div>
+
+                        <!-- Location, State, Circuit -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="map-pin" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Location
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-location">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="map" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> State
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-state">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="compass" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Circuit
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-circuit">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Digital Format, Digital Charges, CDC Charges -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="monitor" class="me-1" style="width: 14px; height: 14px; color: #6366f1;"></i> Digital Format
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-format">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="banknote" class="me-1" style="width: 14px; height: 14px; color: #059669;"></i> Digital Charges (Total)
+                                </div>
+                                <div class="fw-bold fs-6 text-success" id="view-release-charges">-</div>
+                                <div class="text-muted small" id="view-release-charges-sub" style="font-size: 0.72rem;"></div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="tag" class="me-1" style="width: 14px; height: 14px; color: #f59e0b;"></i> CDC Charges
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-cdc">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Controller, GST, PAN -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="user-check" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Controller
+                                </div>
+                                <div class="fw-bold fs-6 text-dark" id="view-release-controller">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="file-text" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> GST Number
+                                </div>
+                                <div class="fw-bold fs-6 font-monospace text-dark" id="view-release-gst">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="credit-card" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> PAN Number
+                                </div>
+                                <div class="fw-bold fs-6 font-monospace text-dark" id="view-release-pan">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Show Count & Timings -->
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="calendar" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Daily Show Count
+                                </div>
+                                <div class="fw-bold fs-6 text-primary" id="view-release-count">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-8">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Show Timing
+                                </div>
+                                <div class="fw-semibold fs-6 text-dark" id="view-release-timing" style="white-space: pre-wrap;">-</div>
+                            </div>
+                        </div>
+
+                        <!-- Added On & Updated -->
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="calendar" class="me-1" style="width: 14px; height: 14px; color: #64748b;"></i> Added On
+                                </div>
+                                <div class="fw-semibold text-secondary" id="view-release-created">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px; color: #64748b;"></i> Last Updated
+                                </div>
+                                <div class="fw-semibold text-secondary" id="view-release-updated">-</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer border-color">
+                    <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                    {% if current_user and current_user.get('role') == 'super_admin' %}
+                    <button type="button" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" id="view-modal-edit-btn">
+                        <i data-lucide="edit-3" style="width: 14px; height: 14px;"></i>
+                        <span>Edit Release</span>
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Release Modal -->
+    <div class="modal fade" id="editReleaseModal" tabindex="-1" aria-labelledby="editReleaseModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom shadow-lg">
+                <form id="edit-release-form" onsubmit="handleUpdateRelease(event)">
+                    <div class="modal-header border-color">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="release-icon-badge" style="width: 32px; height: 32px;">
+                                <i data-lucide="edit" style="width: 16px; height: 16px;"></i>
+                            </div>
+                            <h5 class="modal-title fw-bold mb-0" id="editReleaseModalLabel">Edit Release Details</h5>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-danger d-none py-2 px-3 small" id="modal-edit-error-alert"></div>
+                        <div class="alert alert-info py-2 px-3 small d-flex align-items-center gap-2 mb-3">
+                            <i data-lucide="shield-check" style="width: 18px; height: 18px; flex-shrink: 0;"></i>
+                            <span>Cinema Name will be automatically re-verified against Cinema Master upon saving, and Digital Charges will be re-calculated based on Show Count.</span>
+                        </div>
+                        <input type="hidden" id="edit-release-id" name="release_id" value="">
+
+                        <!-- Movie Name & Cinema Name -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-6">
+                                <label for="edit-release-movie" class="form-label fw-semibold">Movie Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-release-movie" name="movie_name" required placeholder="e.g. KGF Chapter 2" autocomplete="off">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="edit-release-cinema" class="form-label fw-semibold">Cinema / Theatre Name <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control" id="edit-release-cinema" name="cinema_name" required placeholder="e.g. PVR Phoenix Marketcity" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Location & Show Count -->
+                        <div class="row g-3 mb-3">
+                            <div class="col-md-8">
+                                <label for="edit-release-location" class="form-label fw-semibold">Location</label>
+                                <input type="text" class="form-control" id="edit-release-location" name="location" placeholder="e.g. Viman Nagar, Pune" autocomplete="off">
+                            </div>
+                            <div class="col-md-4">
+                                <label for="edit-release-count" class="form-label fw-semibold">Show Count</label>
+                                <input type="number" min="1" max="100" class="form-control" id="edit-release-count" name="show_count" placeholder="e.g. 4" autocomplete="off">
+                            </div>
+                        </div>
+
+                        <!-- Show Timing -->
+                        <div class="mb-2">
+                            <label for="edit-release-timing" class="form-label fw-semibold">Show Timing</label>
+                            <textarea class="form-control" id="edit-release-timing" name="show_timing" rows="2" placeholder="e.g. 10:30 AM, 02:15 PM, 06:45 PM, 10:15 PM" autocomplete="off"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-color">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Cancel</button>
+                        <button type="submit" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" id="save-edit-release-btn">
+                            <i data-lucide="check" style="width: 14px; height: 14px;"></i>
+                            <span>Update Release</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bulk Upload Modal -->
+    <div class="modal fade" id="bulkUploadModal" tabindex="-1" aria-labelledby="bulkUploadModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered modal-lg">
+            <div class="modal-content modal-content-custom shadow-lg">
+                <form id="bulk-upload-release-form" onsubmit="handleBulkUpload(event)">
+                    <div class="modal-header border-color">
+                        <div class="d-flex align-items-center gap-2">
+                            <div class="release-icon-badge" style="width: 34px; height: 34px; background: rgba(79, 70, 229, 0.12); color: #4f46e5;">
+                                <i data-lucide="upload-cloud" style="width: 18px; height: 18px;"></i>
+                            </div>
+                            <div>
+                                <h5 class="modal-title fw-bold mb-0" id="bulkUploadModalLabel">Bulk Upload Releases</h5>
+                                <small class="text-muted">Upload 5 columns: Movie Name, Cinema Name, Location, Show Timing, Show Count</small>
+                            </div>
+                        </div>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body p-4">
+                        <div class="alert alert-danger d-none py-2 px-3 small" id="modal-bulk-error-alert"></div>
+
+                        <!-- Cinema Matching Notice -->
+                        <div class="alert alert-info py-2 px-3 small d-flex align-items-start gap-2 mb-3">
+                            <i data-lucide="shield-check" style="width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px;"></i>
+                            <div>
+                                <strong>Cinema Master Auto-Mapping:</strong> Excel ka <em>Cinema Name</em> Cinema Master ke registered cinemas ke saath match hoga aur table me State, Circuit, Digital Format, Calculated Digital Charges (Digital Charges × Show Count), CDC Charges, Controller, GST &amp; PAN dynamically show honge.
+                            </div>
+                        </div>
+
+                        <!-- Template Download Box -->
+                        <div class="p-3 mb-3 rounded-3 bg-light border d-flex justify-content-between align-items-center flex-wrap gap-2">
+                            <div>
+                                <div class="fw-semibold text-dark small">Sample Excel Template</div>
+                                <div class="text-muted" style="font-size: 0.76rem;">Pre-formatted template with all 5 required columns.</div>
+                            </div>
+                            <a href="/api/releases/download-template" class="btn btn-outline-primary btn-sm d-inline-flex align-items-center gap-1 shadow-sm">
+                                <i data-lucide="download" style="width: 14px; height: 14px;"></i>
+                                <span>Download Template (.xlsx)</span>
+                            </a>
+                        </div>
+
+                        <!-- File Input -->
+                        <div class="mb-3">
+                            <label for="bulk-upload-file" class="form-label fw-semibold">Select Excel or CSV File <span class="text-danger">*</span></label>
+                            <input type="file" class="form-control" id="bulk-upload-file" name="file" accept=".xlsx, .xls, .csv" required>
+                            <div class="form-text small">Supported formats: .xlsx, .xls, .csv</div>
+                        </div>
+
+                        <!-- Results container (hidden until processed) -->
+                        <div id="bulk-upload-results" class="d-none mt-3 p-3 rounded-3 bg-light border">
+                            <div class="d-flex align-items-center gap-2 mb-2 flex-wrap">
+                                <span class="badge bg-success-subtle text-success fs-6 px-3 py-1 rounded-pill" id="bulk-result-created-badge">
+                                    0 Created
+                                </span>
+                                <span class="badge bg-primary-subtle text-primary fs-6 px-3 py-1 rounded-pill" id="bulk-result-matched-badge">
+                                    0 Matched with Cinema Master
+                                </span>
+                                <span class="badge bg-secondary-subtle text-secondary fs-6 px-3 py-1 rounded-pill" id="bulk-result-skipped-badge">
+                                    0 Skipped
+                                </span>
+                            </div>
+                            <div class="small text-muted" id="bulk-result-summary"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer border-color">
+                        <button type="button" class="btn btn-secondary btn-sm" data-bs-dismiss="modal">Close</button>
+                        <button type="submit" class="btn btn-primary btn-sm d-inline-flex align-items-center gap-1" id="save-bulk-upload-btn">
+                            <i data-lucide="upload" style="width: 14px; height: 14px;"></i>
+                            <span>Upload & Process</span>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    {% include "includes/js.html" %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            if (window.lucide) {
+                lucide.createIcons();
+            }
+        });
+
+        function filterReleasesTable() {
+            const input = document.getElementById('release-search-input');
+            const filter = (input ? input.value : '').toLowerCase().trim();
+            const rows = document.querySelectorAll('.release-table-row');
+            let visibleCount = 0;
+
+            rows.forEach(row => {
+                const movie = (row.getAttribute('data-movie') || '').toLowerCase();
+                const cinema = (row.getAttribute('data-cinema') || '').toLowerCase();
+                const matched = (row.getAttribute('data-matched-name') || '').toLowerCase();
+                const loc = (row.getAttribute('data-location') || '').toLowerCase();
+                const state = (row.getAttribute('data-state') || '').toLowerCase();
+                const circuit = (row.getAttribute('data-circuit') || '').toLowerCase();
+                const format = (row.getAttribute('data-format') || '').toLowerCase();
+                const charges = (row.getAttribute('data-charges') || '').toLowerCase();
+                const cdc = (row.getAttribute('data-cdc') || '').toLowerCase();
+                const ctrl = (row.getAttribute('data-controller') || '').toLowerCase();
+                const gst = (row.getAttribute('data-gst') || '').toLowerCase();
+                const pan = (row.getAttribute('data-pan') || '').toLowerCase();
+                const timing = (row.getAttribute('data-timing') || '').toLowerCase();
+                const count = (row.getAttribute('data-count') || '').toLowerCase();
+
+                const combined = `${movie} ${cinema} ${matched} ${loc} ${state} ${circuit} ${format} ${charges} ${cdc} ${ctrl} ${gst} ${pan} ${timing} ${count}`;
+
+                if (combined.includes(filter)) {
+                    row.style.display = '';
+                    visibleCount++;
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+
+            const badgeCount = document.getElementById('badge-release-count');
+            if (badgeCount) {
+                badgeCount.textContent = `${visibleCount} Record(s) Shown`;
+            }
+        }
+
+        async function openViewReleaseModal(releaseId) {
+            const row = document.getElementById(`release-row-${releaseId}`);
+            if (!row) return;
+
+            const movie = row.getAttribute('data-movie-raw') || '-';
+            const cinema = row.getAttribute('data-cinema-raw') || '-';
+            const matchedName = row.getAttribute('data-matched-name') || '';
+            const isMatched = row.getAttribute('data-is-matched') === 'true';
+            const location = row.getAttribute('data-location') || '-';
+            const state = row.getAttribute('data-state') || '-';
+            const circuit = row.getAttribute('data-circuit') || '-';
+            const format = row.getAttribute('data-format') || '-';
+            const charges = row.getAttribute('data-charges') || '-';
+            const chargesRate = row.getAttribute('data-charges-rate') || '0';
+            const cdc = row.getAttribute('data-cdc') || '-';
+            const controller = row.getAttribute('data-controller') || '-';
+            const gst = row.getAttribute('data-gst') || '-';
+            const pan = row.getAttribute('data-pan') || '-';
+            const address = row.getAttribute('data-address') || '';
+            const timing = row.getAttribute('data-timing') || '-';
+            const count = row.getAttribute('data-count') || '1';
+            const created = row.getAttribute('data-created') || 'N/A';
+            const updated = row.getAttribute('data-updated') || 'N/A';
+
+            document.getElementById('view-release-movie').textContent = movie;
+            document.getElementById('view-release-cinema').textContent = cinema;
+            document.getElementById('view-release-location').textContent = location || '-';
+            document.getElementById('view-release-state').textContent = state || '-';
+            document.getElementById('view-release-circuit').textContent = circuit || '-';
+            document.getElementById('view-release-format').textContent = format || '-';
+
+            if (charges && charges !== '-') {
+                document.getElementById('view-release-charges').textContent = `₹${charges}`;
+                if (chargesRate && chargesRate !== '0') {
+                    document.getElementById('view-release-charges-sub').textContent = `Rate ₹${chargesRate} × ${count} Shows = ₹${charges}`;
+                } else {
+                    document.getElementById('view-release-charges-sub').textContent = '';
+                }
+            } else {
+                document.getElementById('view-release-charges').textContent = '-';
+                document.getElementById('view-release-charges-sub').textContent = '';
+            }
+
+            document.getElementById('view-release-cdc').textContent = (cdc && cdc !== '-') ? `₹${cdc}` : '-';
+            document.getElementById('view-release-controller').textContent = controller || '-';
+            document.getElementById('view-release-gst').textContent = gst || '-';
+            document.getElementById('view-release-pan').textContent = pan || '-';
+            document.getElementById('view-release-timing').textContent = timing || '-';
+            document.getElementById('view-release-count').textContent = `${count} Show(s) Daily`;
+            document.getElementById('view-release-created').textContent = created;
+            document.getElementById('view-release-updated').textContent = updated;
+
+            const badgeContainer = document.getElementById('view-release-match-badge-container');
+            const matchedBox = document.getElementById('view-release-matched-box');
+            const matchedNameElem = document.getElementById('view-release-matched-name');
+            const matchedAddrElem = document.getElementById('view-release-matched-address');
+
+            if (isMatched && matchedName) {
+                badgeContainer.innerHTML = `<span class="match-badge match-badge-success fs-6 px-3 py-1"><i data-lucide="shield-check" style="width: 14px; height: 14px;"></i> Matched in Cinema Master</span>`;
+                matchedBox.classList.remove('d-none');
+                matchedNameElem.textContent = matchedName;
+                matchedAddrElem.textContent = address ? `Address: ${address}` : 'Verified registered cinema.';
+            } else {
+                badgeContainer.innerHTML = `<span class="match-badge match-badge-warning fs-6 px-3 py-1"><i data-lucide="alert-circle" style="width: 14px; height: 14px;"></i> Not in Cinema Master</span>`;
+                matchedBox.classList.add('d-none');
+            }
+
+            const editBtn = document.getElementById('view-modal-edit-btn');
+            if (editBtn) {
+                editBtn.onclick = function() {
+                    const viewModalEl = document.getElementById('viewReleaseModal');
+                    const viewModal = bootstrap.Modal.getInstance(viewModalEl);
+                    if (viewModal) viewModal.hide();
+                    openEditReleaseModal(releaseId);
+                };
+            }
+
+            const modal = new bootstrap.Modal(document.getElementById('viewReleaseModal'));
+            modal.show();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        function openEditReleaseModal(releaseId) {
+            const row = document.getElementById(`release-row-${releaseId}`);
+            if (!row) return;
+
+            document.getElementById('edit-release-id').value = releaseId;
+            document.getElementById('edit-release-movie').value = row.getAttribute('data-movie-raw') || '';
+            document.getElementById('edit-release-cinema').value = row.getAttribute('data-cinema-raw') || '';
+            document.getElementById('edit-release-location').value = row.getAttribute('data-location') || '';
+            document.getElementById('edit-release-timing').value = row.getAttribute('data-timing') || '';
+            document.getElementById('edit-release-count').value = row.getAttribute('data-count') || '1';
+
+            const errBox = document.getElementById('modal-edit-error-alert');
+            errBox.classList.add('d-none');
+            errBox.textContent = '';
+
+            const modal = new bootstrap.Modal(document.getElementById('editReleaseModal'));
+            modal.show();
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function handleUpdateRelease(e) {
+            e.preventDefault();
+            const releaseId = document.getElementById('edit-release-id').value;
+            const movieVal = document.getElementById('edit-release-movie').value.trim();
+            const cinemaVal = document.getElementById('edit-release-cinema').value.trim();
+            const locationVal = document.getElementById('edit-release-location').value.trim();
+            const timingVal = document.getElementById('edit-release-timing').value.trim();
+            const countVal = document.getElementById('edit-release-count').value.trim();
+
+            const errBox = document.getElementById('modal-edit-error-alert');
+            errBox.classList.add('d-none');
+
+            if (!movieVal || !cinemaVal) {
+                errBox.textContent = 'Please enter both Movie Name and Cinema Name.';
+                errBox.classList.remove('d-none');
+                return;
+            }
+
+            const btn = document.getElementById('save-edit-release-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Updating...`;
+
+            try {
+                const res = await fetch(`/api/releases/update/${releaseId}`, {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({
+                        movie_name: movieVal,
+                        cinema_name: cinemaVal,
+                        location: locationVal,
+                        show_timing: timingVal,
+                        show_count: countVal
+                    })
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    const modalEl = document.getElementById('editReleaseModal');
+                    const modalInstance = bootstrap.Modal.getInstance(modalEl);
+                    if (modalInstance) modalInstance.hide();
+
+                    alert('Release record updated successfully!');
+                    window.location.reload();
+                } else {
+                    errBox.textContent = data.message || 'Failed to update release.';
+                    errBox.classList.remove('d-none');
+                }
+            } catch (err) {
+                errBox.textContent = 'Server error: ' + err.message;
+                errBox.classList.remove('d-none');
+            } finally {
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Update Release</span>`;
+                if (window.lucide) lucide.createIcons();
+            }
+        }
+
+        async function handleBulkUpload(e) {
+            e.preventDefault();
+            const fileInput = document.getElementById('bulk-upload-file');
+            const errBox = document.getElementById('modal-bulk-error-alert');
+            errBox.classList.add('d-none');
+
+            if (!fileInput.files || fileInput.files.length === 0) {
+                errBox.textContent = 'Please select an Excel or CSV file to upload.';
+                errBox.classList.remove('d-none');
+                return;
+            }
+
+            const btn = document.getElementById('save-bulk-upload-btn');
+            btn.disabled = true;
+            btn.innerHTML = `<span class="spinner-border spinner-border-sm me-1"></span> Processing...`;
+
+            const formData = new FormData();
+            formData.append('file', fileInput.files[0]);
+
+            try {
+                const res = await fetch('/api/releases/bulk-upload', {
+                    method: 'POST',
+                    body: formData
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    const resultsBox = document.getElementById('bulk-upload-results');
+                    resultsBox.classList.remove('d-none');
+
+                    document.getElementById('bulk-result-created-badge').textContent = `${data.created_count} New Added`;
+                    document.getElementById('bulk-result-matched-badge').textContent = `${data.matched_count} Matched with Cinema Master`;
+                    document.getElementById('bulk-result-skipped-badge').textContent = `${data.skipped_count} Skipped`;
+                    document.getElementById('bulk-result-summary').textContent = data.message;
+
+                    btn.innerHTML = `<i data-lucide="check" style="width: 14px; height: 14px;"></i> <span>Success! Reloading...</span>`;
+                    setTimeout(() => {
+                        window.location.reload();
+                    }, 1800);
+                } else {
+                    errBox.textContent = data.message || 'Bulk upload failed.';
+                    errBox.classList.remove('d-none');
+                    btn.disabled = false;
+                    btn.innerHTML = `<i data-lucide="upload" style="width: 14px; height: 14px;"></i> <span>Upload & Process</span>`;
+                }
+            } catch (err) {
+                errBox.textContent = 'Server error: ' + err.message;
+                errBox.classList.remove('d-none');
+                btn.disabled = false;
+                btn.innerHTML = `<i data-lucide="upload" style="width: 14px; height: 14px;"></i> <span>Upload & Process</span>`;
+            }
+            if (window.lucide) lucide.createIcons();
+        }
+
+        async function deleteRelease(releaseId, movieName, cinemaName) {
+            if (!confirm(`Are you sure you want to delete the release of "${movieName}" at "${cinemaName}"?`)) {
+                return;
+            }
+
+            try {
+                const res = await fetch(`/api/releases/delete/${releaseId}`, {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    const row = document.getElementById(`release-row-${releaseId}`);
+                    if (row) row.remove();
+                    alert(data.message || 'Release record deleted.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to delete release.');
+                }
+            } catch (err) {
+                alert('Error deleting release: ' + err.message);
+            }
+        }
+
+        async function clearAllReleases() {
+            if (!confirm('DANGER: Are you sure you want to delete ALL release master records? This action cannot be undone.')) {
+                return;
+            }
+
+            try {
+                const res = await fetch('/api/releases/clear-all', {
+                    method: 'POST'
+                });
+                const data = await res.json();
+                if (res.ok && data.status) {
+                    alert(data.message || 'All release records cleared.');
+                    window.location.reload();
+                } else {
+                    alert(data.message || 'Failed to clear releases.');
+                }
+            } catch (err) {
+                alert('Error clearing releases: ' + err.message);
+            }
+        }
+    </script>
+</body>
+</html>

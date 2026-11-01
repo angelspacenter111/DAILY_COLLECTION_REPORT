@@ -21,6 +21,10 @@
             <i data-lucide="clapperboard"></i>
             <span>Cinema Master</span>
         </a>
+        <a href="{{BASE_URL + '/releases'}}" class="sidebar-nav-link">
+            <i data-lucide="film"></i>
+            <span>Release Master</span>
+        </a>
         {% if current_user and current_user.get('role') == 'super_admin' %}
         <a href="{{BASE_URL + '/users'}}" class="sidebar-nav-link">
             <i data-lucide="users"></i>

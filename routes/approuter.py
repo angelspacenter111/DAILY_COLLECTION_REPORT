@@ -28,6 +28,17 @@ from controllers.cinema_controller import (
     download_cinema_template_excel,
     bulk_upload_cinemas_action,
 )
+from controllers.release_controller import (
+    releases_view,
+    get_release_action,
+    create_release_action,
+    update_release_action,
+    delete_release_action,
+    clear_all_releases_action,
+    download_releases_excel,
+    download_release_template_excel,
+    bulk_upload_releases_action,
+)
 
 router = APIRouter()
 
@@ -51,6 +62,18 @@ router.get("/api/cinemas/{cinema_id}")(get_cinema_action)
 router.post("/api/cinemas/create")(create_cinema_action)
 router.post("/api/cinemas/update/{cinema_id}")(update_cinema_action)
 router.post("/api/cinemas/delete/{cinema_id}")(delete_cinema_action)
+
+# Release Master Routes
+router.get("/releases")(releases_view)
+router.get("/releases/download-excel")(download_releases_excel)
+router.get("/api/releases/download-excel")(download_releases_excel)
+router.get("/api/releases/download-template")(download_release_template_excel)
+router.post("/api/releases/bulk-upload")(bulk_upload_releases_action)
+router.get("/api/releases/{release_id}")(get_release_action)
+router.post("/api/releases/create")(create_release_action)
+router.post("/api/releases/update/{release_id}")(update_release_action)
+router.post("/api/releases/delete/{release_id}")(delete_release_action)
+router.post("/api/releases/clear-all")(clear_all_releases_action)
 
 # DCR Core Routes
 router.get("/")(index)
