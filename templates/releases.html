@@ -280,14 +280,14 @@
                                     <th>Location</th>
                                     <th>State</th>
                                     <th>Circuit</th>
+                                    <th>Show Timing</th>
+                                    <th class="text-center" style="width: 80px;">Show Count</th>
                                     <th>Digital Format</th>
                                     <th class="text-end">Digital Charges</th>
                                     <th class="text-end">CDC Charges</th>
                                     <th>Controller</th>
                                     <th>GST Number</th>
                                     <th>PAN Number</th>
-                                    <th>Show Timing</th>
-                                    <th class="text-center" style="width: 70px;">Shows</th>
                                     <th class="text-center" style="width: 150px;">Actions</th>
                                 </tr>
                             </thead>
@@ -359,6 +359,16 @@
                                             <div class="small text-muted" id="release-circuit-text-{{ r['id'] }}">{{ r.get('circuit') or '-' }}</div>
                                         </td>
                                         <td>
+                                            <div class="small text-dark text-truncate" id="release-timing-text-{{ r['id'] }}" style="max-width: 170px;" title="{{ r.get('show_timing') }}">
+                                                {{ r.get('show_timing') or '-' }}
+                                            </div>
+                                        </td>
+                                        <td class="text-center">
+                                            <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded" id="release-count-badge-{{ r['id'] }}">
+                                                {{ r.get('show_count', 1) }}
+                                            </span>
+                                        </td>
+                                        <td>
                                             {% if r.get('digital_format') and r.get('digital_format') != '-' %}
                                             <span class="badge bg-secondary-subtle text-secondary px-2 py-1" id="release-format-text-{{ r['id'] }}">{{ r.get('digital_format') }}</span>
                                             {% else %}
@@ -392,16 +402,6 @@
                                         </td>
                                         <td>
                                             <div class="small font-monospace text-muted" id="release-pan-text-{{ r['id'] }}">{{ r.get('pan_number') or '-' }}</div>
-                                        </td>
-                                        <td>
-                                            <div class="small text-dark text-truncate" id="release-timing-text-{{ r['id'] }}" style="max-width: 170px;" title="{{ r.get('show_timing') }}">
-                                                {{ r.get('show_timing') or '-' }}
-                                            </div>
-                                        </td>
-                                        <td class="text-center">
-                                            <span class="badge bg-primary-subtle text-primary fw-bold px-2 py-1 rounded" id="release-count-badge-{{ r['id'] }}">
-                                                {{ r.get('show_count', 1) }}
-                                            </span>
                                         </td>
                                         <td class="text-center">
                                             <div class="d-flex align-items-center justify-content-center gap-1">
@@ -508,6 +508,24 @@
                             </div>
                         </div>
 
+                        <!-- Show Timing & Daily Show Count (Immediately after Circuit) -->
+                        <div class="col-md-8">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Show Timing
+                                </div>
+                                <div class="fw-semibold fs-6 text-dark" id="view-release-timing" style="white-space: pre-wrap;">-</div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="p-3 bg-light rounded-3 border">
+                                <div class="text-muted small text-uppercase fw-semibold mb-1">
+                                    <i data-lucide="calendar" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Daily Show Count
+                                </div>
+                                <div class="fw-bold fs-6 text-primary" id="view-release-count">-</div>
+                            </div>
+                        </div>
+
                         <!-- Digital Format, Digital Charges, CDC Charges -->
                         <div class="col-md-4">
                             <div class="p-3 bg-light rounded-3 border">
@@ -558,24 +576,6 @@
                                     <i data-lucide="credit-card" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> PAN Number
                                 </div>
                                 <div class="fw-bold fs-6 font-monospace text-dark" id="view-release-pan">-</div>
-                            </div>
-                        </div>
-
-                        <!-- Show Count & Timings -->
-                        <div class="col-md-4">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">
-                                    <i data-lucide="calendar" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Daily Show Count
-                                </div>
-                                <div class="fw-bold fs-6 text-primary" id="view-release-count">-</div>
-                            </div>
-                        </div>
-                        <div class="col-md-8">
-                            <div class="p-3 bg-light rounded-3 border">
-                                <div class="text-muted small text-uppercase fw-semibold mb-1">
-                                    <i data-lucide="clock" class="me-1" style="width: 14px; height: 14px; color: #4f46e5;"></i> Show Timing
-                                </div>
-                                <div class="fw-semibold fs-6 text-dark" id="view-release-timing" style="white-space: pre-wrap;">-</div>
                             </div>
                         </div>
 

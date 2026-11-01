@@ -170,14 +170,14 @@ async def download_releases_excel(request: Request):
         "Location",
         "State",
         "Circuit",
+        "Show Timing",
+        "Show Count",
         "Digital Format",
         "Digital Charges",
         "CDC Charges",
         "Controller",
         "GST Number",
         "PAN Number",
-        "Show Timing",
-        "Show Count",
         "Cinema Master Status",
         "Matched Cinema Name",
         "Added On",
@@ -214,14 +214,14 @@ async def download_releases_excel(request: Request):
             r.get("location", ""),
             r.get("state", ""),
             r.get("circuit", ""),
+            r.get("show_timing", ""),
+            r.get("show_count", 1),
             r.get("digital_format", ""),
             r.get("digital_charges", ""),
             r.get("cdc_charges", ""),
             r.get("controller", ""),
             r.get("gst", ""),
             r.get("pan_number", ""),
-            r.get("show_timing", ""),
-            r.get("show_count", 1),
             status_text,
             r.get("matched_cinema_name", "-") if r.get("is_matched") else "-",
             r.get("created_at_formatted", "N/A"),
@@ -235,8 +235,8 @@ async def download_releases_excel(request: Request):
             cell = ws.cell(row=curr_row, column=col_idx)
             cell.font = data_font
             cell.border = cell_border
-            # center align numbers and statuses: S.No (1), State (5), Circuit (6), Format (7), Charges (8), CDC (9), Shows (14), Status (15), Dates (17, 18)
-            if col_idx in (1, 5, 6, 7, 8, 9, 14, 15, 17, 18):
+            # center align numbers and statuses: S.No (1), State (5), Circuit (6), Shows (8), Format (9), Charges (10), CDC (11), GST (13), PAN (14), Status (15), Dates (17, 18)
+            if col_idx in (1, 5, 6, 8, 9, 10, 11, 13, 14, 15, 17, 18):
                 cell.alignment = data_align_center
             else:
                 cell.alignment = data_align_left
@@ -260,8 +260,17 @@ async def download_releases_excel(request: Request):
     ws.column_dimensions["B"].width = 24  # Movie Name
     ws.column_dimensions["C"].width = 28  # Cinema Name
     ws.column_dimensions["D"].width = 18  # Location
-    ws.column_dimensions["H"].width = 16  # Digital Charges
-    ws.column_dimensions["M"].width = 28  # Show Timing
+    ws.column_dimensions["E"].width = 16  # State
+    ws.column_dimensions["F"].width = 16  # Circuit
+    ws.column_dimensions["G"].width = 28  # Show Timing
+    ws.column_dimensions["H"].width = 14  # Show Count
+    ws.column_dimensions["I"].width = 16  # Digital Format
+    ws.column_dimensions["J"].width = 16  # Digital Charges
+    ws.column_dimensions["K"].width = 16  # CDC Charges
+    ws.column_dimensions["L"].width = 18  # Controller
+    ws.column_dimensions["M"].width = 18  # GST Number
+    ws.column_dimensions["N"].width = 16  # PAN Number
+    ws.column_dimensions["O"].width = 18  # Status
     ws.column_dimensions["P"].width = 28  # Matched Cinema Name
 
     stream = BytesIO()
